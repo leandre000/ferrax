@@ -93,6 +93,39 @@ export const deleteCar = async (req, res) => {
   }
 }
 
+export const listMyCars = async (req, res) => {
+  try {
+    const cars = await Car.find({ owner: req.user._id }).sort({ createdAt: -1 })
+    res.json(cars)
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch cars' })
+  }
+}
+
+export const reorderImages = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { images } = req.body // full ordered array
+    if (!Array.isArray(images)) return res.status(400).json({ message: 'images must be array' })
+    const car = await Car.findById(id)
+    if (!car) return res.status(404).json({ message: 'Car not found' })
+    const isOwner = car.owner.toString() === req.user._id.toString()
+    const isAdmin = req.user.role === 'admin'
+    if (!isOwner && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
+    const setOld = new Set(car.images || [])
+    const setNew = new Set(images)
+    if (setOld.size !== setNew.size || [...setOld].some(u => !setNew.has(u))) {
+      return res.status(400).json({ message: 'images must contain same URLs as existing' })
+    }
+    car.images = images
+    if (!images.includes(car.primaryImage)) car.primaryImage = images[0] || ''
+    await car.save()
+    res.json(car)
+  } catch (error) {
+    res.status(400).json({ message: 'Failed to reorder images' })
+  }
+}
+
 export const setPrimaryImage = async (req, res) => {
   try {
     const { id } = req.params

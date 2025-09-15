@@ -88,6 +88,38 @@ export const listMyOrders = async (req, res) => {
   }
 }
 
+export const listOrdersAdmin = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, status } = req.query
+    const filter = {}
+    if (status) filter.status = status
+    const items = await Order.find(filter).populate('car buyer', 'make model year fullname email')
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
+    const total = await Order.countDocuments(filter)
+    res.json({ items, total, page: Number(page), limit: Number(limit) })
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch orders' })
+  }
+}
+
+export const cancelOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+    if (!order) return res.status(404).json({ message: 'Order not found' })
+    const isBuyer = order.buyer.toString() === req.user._id.toString()
+    const isAdmin = req.user.role === 'admin'
+    if (!isBuyer && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
+    if (order.status !== 'initiated') return res.status(400).json({ message: 'Cannot cancel this order' })
+    order.status = 'cancelled'
+    await order.save()
+    res.json(order)
+  } catch (error) {
+    res.status(400).json({ message: 'Failed to cancel order' })
+  }
+}
+
 export const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id).populate('car')

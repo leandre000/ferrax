@@ -77,4 +77,33 @@ export const listMyBookings = async (req, res) => {
   }
 }
 
+export const listBookingsAdmin = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, status } = req.query
+    const filter = {}
+    if (status) filter.status = status
+    const items = await Booking.find(filter).populate('car user', 'make model year fullname email')
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
+    const total = await Booking.countDocuments(filter)
+    res.json({ items, total, page: Number(page), limit: Number(limit) })
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch bookings' })
+  }
+}
+
+export const getBookingById = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id).populate('car user', 'make model year fullname email')
+    if (!booking) return res.status(404).json({ message: 'Booking not found' })
+    const isOwner = booking.user._id.toString() === req.user._id.toString()
+    const isAdmin = req.user.role === 'admin'
+    if (!isOwner && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
+    res.json(booking)
+  } catch (error) {
+    res.status(404).json({ message: 'Booking not found' })
+  }
+}
+
 
