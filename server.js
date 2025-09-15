@@ -9,6 +9,7 @@ import bookingRoutes from './routes/booking.routes.js'
 import orderRoutes from './routes/order.routes.js'
 import webhookRoutes from './routes/webhook.routes.js'
 import userRoutes from './routes/user.routes.js'
+import { auditLogger } from './middlewares/audit.middleware.js'
 
 dotenv.config()
 
@@ -24,6 +25,9 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:3000',
   credentials: true
 }))
+
+// Audit logging
+app.use(auditLogger)
 
 // Routes
 app.use('/api/auth', authRoutes)
