@@ -12,6 +12,7 @@ const carSchema = new mongoose.Schema({
   vin: { type: String, unique: true, sparse: true, trim: true },
   description: { type: String, default: '' },
   images: [{ type: String }],
+  primaryImage: { type: String, default: '' },
   location: { type: String, default: '' },
   fuelType: { type: String, enum: ['petrol', 'diesel', 'electric', 'hybrid', 'other'], default: 'other' },
   transmission: { type: String, enum: ['automatic', 'manual'], required: true },

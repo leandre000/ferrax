@@ -2,11 +2,17 @@ import Car from '../models/car.model.js'
 
 export const createCar = async (req, res) => {
   try {
-    const { images, ...rest } = req.body
+    const { images, primaryImage, ...rest } = req.body
     const data = { ...rest, owner: req.user._id }
 
     if (Array.isArray(images) && images.length > 0) {
       data.images = images
+    }
+
+    if (primaryImage) {
+      data.primaryImage = primaryImage
+    } else if (Array.isArray(images) && images.length > 0) {
+      data.primaryImage = images[0]
     }
 
     const car = await Car.create(data)
@@ -87,6 +93,25 @@ export const deleteCar = async (req, res) => {
   }
 }
 
+export const setPrimaryImage = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { imageUrl } = req.body
+    if (!imageUrl) return res.status(400).json({ message: 'imageUrl is required' })
+    const car = await Car.findById(id)
+    if (!car) return res.status(404).json({ message: 'Car not found' })
+    const isOwner = car.owner.toString() === req.user._id.toString()
+    const isAdmin = req.user.role === 'admin'
+    if (!isOwner && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
+    if (!(car.images || []).includes(imageUrl)) return res.status(400).json({ message: 'imageUrl must be one of the car images' })
+    car.primaryImage = imageUrl
+    await car.save()
+    res.json(car)
+  } catch (error) {
+    res.status(400).json({ message: 'Failed to set primary image' })
+  }
+}
+
 export const addCarImages = async (req, res) => {
   try {
     const { id } = req.params
@@ -98,6 +123,9 @@ export const addCarImages = async (req, res) => {
     if (!car) return res.status(404).json({ message: 'Car not found' })
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Admin only' })
     car.images = [...(car.images || []), ...images]
+    if (!car.primaryImage && car.images.length > 0) {
+      car.primaryImage = car.images[0]
+    }
     await car.save()
     res.json(car)
   } catch (error) {
@@ -114,6 +142,9 @@ export const removeCarImage = async (req, res) => {
     if (!car) return res.status(404).json({ message: 'Car not found' })
     if (req.user.role !== 'admin') return res.status(403).json({ message: 'Admin only' })
     car.images = (car.images || []).filter(u => u !== imageUrl)
+    if (car.primaryImage === imageUrl) {
+      car.primaryImage = car.images[0] || ''
+    }
     await car.save()
     res.json(car)
   } catch (error) {
