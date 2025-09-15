@@ -5,6 +5,8 @@ import cors from 'cors'
 import { connectDB } from './config/db.js'
 import authRoutes from './routes/auth.routes.js'
 import carRoutes from './routes/car.routes.js'
+import bookingRoutes from './routes/booking.routes.js'
+import orderRoutes from './routes/order.routes.js'
 
 dotenv.config()
 
@@ -21,6 +23,8 @@ app.use(cors({
 // Routes
 app.use('/api/auth', authRoutes)
 app.use('/api/cars', carRoutes)
+app.use('/api/bookings', bookingRoutes)
+app.use('/api/orders', orderRoutes)
 
 // Health check
 app.get('/health', (req, res) => {
