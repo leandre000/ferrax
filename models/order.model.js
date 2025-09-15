@@ -6,6 +6,8 @@ const orderSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   status: { type: String, enum: ['initiated', 'paid', 'cancelled'], default: 'initiated' },
   paymentRef: { type: String },
+  stripeSessionId: { type: String },
+  stripePaymentIntentId: { type: String },
   notes: { type: String, default: '' }
 }, { timestamps: true })
 

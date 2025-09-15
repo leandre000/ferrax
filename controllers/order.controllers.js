@@ -1,5 +1,8 @@
 import Order from '../models/order.model.js'
 import Car from '../models/car.model.js'
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-06-20' })
 
 export const createOrder = async (req, res) => {
   try {
@@ -14,6 +17,41 @@ export const createOrder = async (req, res) => {
     res.status(201).json(order)
   } catch (error) {
     res.status(400).json({ message: 'Failed to create order' })
+  }
+}
+
+export const createCheckoutSession = async (req, res) => {
+  try {
+    const { orderId, successUrl, cancelUrl } = req.body
+    const order = await Order.findById(orderId).populate('car')
+    if (!order) return res.status(404).json({ message: 'Order not found' })
+    if (order.buyer.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Forbidden' })
+    if (order.status !== 'initiated') return res.status(400).json({ message: 'Invalid order status' })
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: { name: `${order.car.make} ${order.car.model} ${order.car.year}` },
+            unit_amount: Math.round(order.amount * 100)
+          },
+          quantity: 1
+        }
+      ],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: { orderId: order._id.toString(), carId: order.car._id.toString() }
+    })
+
+    order.stripeSessionId = session.id
+    await order.save()
+
+    res.json({ id: session.id, url: session.url })
+  } catch (error) {
+    res.status(400).json({ message: 'Failed to create checkout session', error: error.message })
   }
 }
 
@@ -47,6 +85,19 @@ export const listMyOrders = async (req, res) => {
     res.json(orders)
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch orders' })
+  }
+}
+
+export const getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('car')
+    if (!order) return res.status(404).json({ message: 'Order not found' })
+    const isBuyer = order.buyer.toString() === req.user._id.toString()
+    const isAdmin = req.user.role === 'admin'
+    if (!isBuyer && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
+    res.json(order)
+  } catch (error) {
+    res.status(404).json({ message: 'Order not found' })
   }
 }
 

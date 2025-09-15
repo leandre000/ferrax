@@ -7,10 +7,14 @@ import authRoutes from './routes/auth.routes.js'
 import carRoutes from './routes/car.routes.js'
 import bookingRoutes from './routes/booking.routes.js'
 import orderRoutes from './routes/order.routes.js'
+import webhookRoutes from './routes/webhook.routes.js'
 
 dotenv.config()
 
 const app = express()
+
+// Webhooks must be mounted before json parser for raw body
+app.use('/api/webhooks', webhookRoutes)
 
 // Middleware
 app.use(express.json())
