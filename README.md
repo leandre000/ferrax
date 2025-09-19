@@ -9,7 +9,7 @@ Backend API for car sales management: authentication with OTP, cars, bookings, o
 
 ```
 PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/carhubconnect
+MONGO_URI=mongodb://127.0.0.1:27017/carhubconnect_db
 JWT_SECRET=change_me
 CLIENT_URL=http://localhost:3000
 

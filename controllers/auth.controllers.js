@@ -37,13 +37,18 @@ export const login = async (req, res) => {
         user.otpExpiresAt = expiresAt
         await user.save()
 
-        await sendMail({
-            to: user.email,
-            subject: 'Your CarHubConnect OTP',
-            html: `<p>Use this OTP to complete your login:</p><h2>${otp}</h2><p>This code expires in 5 minutes.</p>`
-        })
+        try {
+            await sendMail({
+                to: user.email,
+                subject: 'Your CarHubConnect OTP',
+                html: `<p>Use this OTP to complete your login:</p><h2>${otp}</h2><p>This code expires in 5 minutes.</p>`
+            })
+        } catch (emailError) {
+            console.log('Email sending failed:', emailError.message)
+            return res.status(500).json({ message: 'Internal server error' })
+        }
 
-        res.status(200).json({ message: 'OTP sent to email' })
+        res.status(200).json({ message: 'OTP sent to email', success : true })
     } catch (error) {
         console.log(error);
         return res.status(500).json({ message: "Internal server error" })
@@ -57,7 +62,7 @@ export const logout = (req, res) => {
 
 export const me = async (req, res) => {
     const user = req.user
-    res.json(user)
+    res.status(200).json({ success : true, user : user })
 }
 
 export const verifyOtp = async (req, res) => {
@@ -75,7 +80,7 @@ export const verifyOtp = async (req, res) => {
         await user.save()
 
         generateTokenAndSetCookie(user._id, res)
-        res.json({ message: 'Login successful' })
+        res.status(200).json({ message: 'Login successful', success : true })
     } catch (error) {
         return res.status(500).json({ message: 'Internal server error' })
     }
