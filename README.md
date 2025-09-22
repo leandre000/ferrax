@@ -13,16 +13,14 @@ MONGO_URI=mongodb://127.0.0.1:27017/carhubconnect_db
 JWT_SECRET=change_me
 CLIENT_URL=http://localhost:3000
 
-# Email
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=you@example.com
-SMTP_PASS=app_password
-MAIL_FROM=CarHubConnect <no-reply@carhubconnect.local>
-
 # Stripe
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Firebase (for phone OTP)
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nABC...\\n-----END PRIVATE KEY-----\n"
 ```
 
 3. Install deps and run:
@@ -34,9 +32,9 @@ npm run dev
 
 ## Auth
 
-- POST `/api/auth/register` { fullname, email, password }
-- POST `/api/auth/login` { email, password } → sends OTP
-- POST `/api/auth/verify-otp` { email, otp } → sets cookie
+- POST `/api/auth/register` { fullname, email, phone, password }
+- POST `/api/auth/login` { phone, password } → returns `{ requiresOtp: true }`
+- POST `/api/auth/verify-otp` { phone, firebaseIdToken } → sets cookie
 - POST `/api/auth/logout`
 - GET `/api/auth/me`
 

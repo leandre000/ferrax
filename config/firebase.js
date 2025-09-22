@@ -1,4 +1,7 @@
 import admin from 'firebase-admin'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 export const initFirebase = () => {
   if (admin.apps.length) return admin.app()
