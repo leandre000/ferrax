@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import { generateTokenAndSetCookie } from '../utils/cookie.utils.js'
 import { sendMail } from '../config/email.js'
 import { getFirebaseAuth } from '../config/firebase.js'
+import { logger } from '../config/logger.js'
 
 export const register = async (req, res) => {
     const { fullname, email, phone, password } = req.body;
@@ -21,6 +22,7 @@ export const register = async (req, res) => {
         generateTokenAndSetCookie(user._id, res)
         res.status(201).json({ message: 'Registration successful', user: { id: user._id, fullname: user.fullname, email: user.email, phone: user.phone, role: user.role } })
     } catch (error) {
+        logger.error({ err: error, email, phone }, 'Registration failed')
         return res.status(500).json({ message: "Internal server error" })
     }
 };
@@ -35,7 +37,7 @@ export const login = async (req, res) => {
         // Frontend will trigger Firebase SMS for this phone.
         res.status(200).json({ message: 'Proceed with phone OTP', success: true, requiresOtp: true, phone: user.phone })
     } catch (error) {
-        console.log(error);
+        logger.error({ err: error, phone }, 'Login failed')
         return res.status(500).json({ message: "Internal server error" })
     }
 }
@@ -69,8 +71,10 @@ export const verifyOtp = async (req, res) => {
         }
 
         generateTokenAndSetCookie(user._id, res)
+        logger.info({ userId: user._id }, 'Login successful')
         res.status(200).json({ message: 'Login successful', success: true })
     } catch (error) {
+        logger.error({ err: error, phone }, 'OTP verification failed')
         return res.status(500).json({ message: 'Internal server error' })
     }
 }

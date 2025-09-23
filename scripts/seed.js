@@ -1,4 +1,5 @@
 import dotenv from 'dotenv'
+import { logger } from '../config/logger.js'
 import { connectDB } from '../config/db.js'
 import User from '../models/user.model.js'
 import Car from '../models/car.model.js'
@@ -72,23 +73,23 @@ const main = async () => {
     const salt = await bcrypt.genSalt(12)
     const hashed = await bcrypt.hash('Password123!', salt)
     owner = await User.create({ fullname: 'Default Owner', email, phone, password: hashed, role: 'admin' })
-    console.log('Created owner user:', owner.email)
+    logger.info({ email: owner.email }, 'Created owner user')
   }
 
   const countBefore = await Car.countDocuments()
   if (countBefore >= 10) {
-    console.log('Cars already seeded (>=10). Skipping.')
+    logger.info('Cars already seeded (>=10). Skipping.')
     process.exit(0)
   }
 
   await Car.insertMany(sampleCars(owner._id))
   const countAfter = await Car.countDocuments()
-  console.log(`Seeded cars. Total count: ${countAfter}`)
+  logger.info({ total: countAfter }, 'Seeded cars')
   process.exit(0)
 }
 
 main().catch((e) => {
-  console.error(e)
+  logger.error({ err: e }, 'Seed script failed')
   process.exit(1)
 })
 

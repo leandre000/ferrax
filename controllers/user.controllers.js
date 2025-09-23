@@ -1,4 +1,5 @@
 import User from '../models/user.model.js'
+import { logger } from '../config/logger.js'
 
 export const listUsers = async (req, res) => {
   try {
@@ -18,6 +19,7 @@ export const listUsers = async (req, res) => {
     const count = await User.countDocuments(filter)
     res.json({ items: users, total: count, page: Number(page), limit: Number(limit) })
   } catch (error) {
+    logger.error({ err: error, query: req.query }, 'Failed to fetch users')
     res.status(500).json({ message: 'Failed to fetch users' })
   }
 }
@@ -31,6 +33,7 @@ export const updateUserRole = async (req, res) => {
     if (!user) return res.status(404).json({ message: 'User not found' })
     res.json(user)
   } catch (error) {
+    logger.error({ err: error, targetUserId: req.params.id, role }, 'Failed to update user role')
     res.status(400).json({ message: 'Failed to update user role' })
   }
 }

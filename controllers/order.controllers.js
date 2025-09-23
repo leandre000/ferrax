@@ -1,6 +1,7 @@
 import Order from '../models/order.model.js'
 import Car from '../models/car.model.js'
 import Stripe from 'stripe'
+import { logger } from '../config/logger.js'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-06-20' })
 
@@ -14,8 +15,10 @@ export const createOrder = async (req, res) => {
       return res.status(400).json({ message: 'Car reserved by another user' })
     }
     const order = await Order.create({ car: car._id, buyer: req.user._id, amount, notes })
+    logger.info({ orderId: order._id, carId: car._id, userId: req.user._id }, 'Order created')
     res.status(201).json(order)
   } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, carId }, 'Failed to create order')
     res.status(400).json({ message: 'Failed to create order' })
   }
 }
@@ -48,9 +51,10 @@ export const createCheckoutSession = async (req, res) => {
 
     order.stripeSessionId = session.id
     await order.save()
-
+    logger.info({ orderId: order._id, sessionId: session.id, userId: req.user._id }, 'Checkout session created')
     res.json({ id: session.id, url: session.url })
   } catch (error) {
+    logger.error({ err: error, orderId: req.body?.orderId, userId: req.user?._id }, 'Failed to create checkout session')
     res.status(400).json({ message: 'Failed to create checkout session', error: error.message })
   }
 }
@@ -72,9 +76,10 @@ export const payOrder = async (req, res) => {
     car.reservedBy = undefined
     car.reservedUntil = undefined
     await car.save()
-
+    logger.info({ orderId: order._id, carId: car._id, userId: req.user._id }, 'Order paid')
     res.json(order)
   } catch (error) {
+    logger.error({ err: error, orderId: req.params.id, userId: req.user?._id }, 'Failed to complete payment')
     res.status(400).json({ message: 'Failed to complete payment' })
   }
 }
@@ -84,6 +89,7 @@ export const listMyOrders = async (req, res) => {
     const orders = await Order.find({ buyer: req.user._id }).populate('car')
     res.json(orders)
   } catch (error) {
+    logger.error({ err: error, userId: req.user?._id }, 'Failed to fetch my orders')
     res.status(500).json({ message: 'Failed to fetch orders' })
   }
 }
@@ -100,6 +106,7 @@ export const listOrdersAdmin = async (req, res) => {
     const total = await Order.countDocuments(filter)
     res.json({ items, total, page: Number(page), limit: Number(limit) })
   } catch (error) {
+    logger.error({ err: error, query: req.query }, 'Failed to fetch orders (admin)')
     res.status(500).json({ message: 'Failed to fetch orders' })
   }
 }
@@ -114,8 +121,10 @@ export const cancelOrder = async (req, res) => {
     if (order.status !== 'initiated') return res.status(400).json({ message: 'Cannot cancel this order' })
     order.status = 'cancelled'
     await order.save()
+    logger.info({ orderId: order._id, userId: req.user._id }, 'Order cancelled')
     res.json(order)
   } catch (error) {
+    logger.error({ err: error, orderId: req.params.id, userId: req.user?._id }, 'Failed to cancel order')
     res.status(400).json({ message: 'Failed to cancel order' })
   }
 }
@@ -129,6 +138,7 @@ export const getOrderById = async (req, res) => {
     if (!isBuyer && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
     res.json(order)
   } catch (error) {
+    logger.error({ err: error, orderId: req.params.id, userId: req.user?._id }, 'Failed to fetch order by id')
     res.status(404).json({ message: 'Order not found' })
   }
 }

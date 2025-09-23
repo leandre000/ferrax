@@ -1,4 +1,5 @@
 import Car from '../models/car.model.js'
+import { logger } from '../config/logger.js'
 
 export const createCar = async (req, res) => {
   try {
@@ -16,8 +17,10 @@ export const createCar = async (req, res) => {
     }
 
     const car = await Car.create(data)
+    logger.info({ userId: req.user._id, carId: car._id }, 'Car created')
     res.status(201).json(car)
   } catch (error) {
+    logger.error({ err: error, userId: req.user?._id }, 'Failed to create car')
     res.status(400).json({ message: 'Failed to create car', error: error.message })
   }
 }
@@ -44,6 +47,7 @@ export const getCars = async (req, res) => {
     const count = await Car.countDocuments(filter)
     res.json({ items: cars, total: count, page: Number(page), limit: Number(limit) })
   } catch (error) {
+    logger.error({ err: error, query: req.query }, 'Failed to fetch cars')
     res.status(500).json({ message: 'Failed to fetch cars' })
   }
 }
@@ -54,6 +58,7 @@ export const getCarById = async (req, res) => {
     if (!car) return res.status(404).json({ message: 'Car not found' })
     res.json(car)
   } catch (error) {
+    logger.error({ err: error, carId: req.params.id }, 'Failed to fetch car by id')
     res.status(404).json({ message: 'Car not found' })
   }
 }
@@ -72,8 +77,10 @@ export const updateCar = async (req, res) => {
     }
     Object.assign(car, updates)
     await car.save()
+    logger.info({ carId: car._id, userId: req.user._id }, 'Car updated')
     res.json(car)
   } catch (error) {
+    logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to update car')
     res.status(400).json({ message: 'Failed to update car' })
   }
 }
@@ -87,8 +94,10 @@ export const deleteCar = async (req, res) => {
     if (!isOwner && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
 
     await car.deleteOne()
+    logger.info({ carId: car._id, userId: req.user._id }, 'Car deleted')
     res.json({ message: 'Car deleted' })
   } catch (error) {
+    logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to delete car')
     res.status(400).json({ message: 'Failed to delete car' })
   }
 }
@@ -98,6 +107,7 @@ export const listMyCars = async (req, res) => {
     const cars = await Car.find({ owner: req.user._id }).sort({ createdAt: -1 })
     res.json(cars)
   } catch (error) {
+    logger.error({ err: error, userId: req.user?._id }, 'Failed to list my cars')
     res.status(500).json({ message: 'Failed to fetch cars' })
   }
 }
@@ -120,8 +130,10 @@ export const reorderImages = async (req, res) => {
     car.images = images
     if (!images.includes(car.primaryImage)) car.primaryImage = images[0] || ''
     await car.save()
+    logger.info({ carId: car._id, userId: req.user._id }, 'Car images reordered')
     res.json(car)
   } catch (error) {
+    logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to reorder images')
     res.status(400).json({ message: 'Failed to reorder images' })
   }
 }
@@ -139,8 +151,10 @@ export const setPrimaryImage = async (req, res) => {
     if (!(car.images || []).includes(imageUrl)) return res.status(400).json({ message: 'imageUrl must be one of the car images' })
     car.primaryImage = imageUrl
     await car.save()
+    logger.info({ carId: car._id, userId: req.user._id }, 'Primary image set')
     res.json(car)
   } catch (error) {
+    logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to set primary image')
     res.status(400).json({ message: 'Failed to set primary image' })
   }
 }
@@ -160,8 +174,10 @@ export const addCarImages = async (req, res) => {
       car.primaryImage = car.images[0]
     }
     await car.save()
+    logger.info({ carId: car._id, userId: req.user._id, count: images?.length }, 'Car images added')
     res.json(car)
   } catch (error) {
+    logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to add images')
     res.status(400).json({ message: 'Failed to add images' })
   }
 }
@@ -179,8 +195,10 @@ export const removeCarImage = async (req, res) => {
       car.primaryImage = car.images[0] || ''
     }
     await car.save()
+    logger.info({ carId: car._id, userId: req.user._id }, 'Car image removed')
     res.json(car)
   } catch (error) {
+    logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to remove image')
     res.status(400).json({ message: 'Failed to remove image' })
   }
 }
