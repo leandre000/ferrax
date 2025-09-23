@@ -22,7 +22,7 @@ app.use('/api/webhooks', webhookRoutes)
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000' || "https://carhub-rw.vercel.app",
+  origin: process.env.CLIENT_URL || "https://carhub-rw.vercel.app",
   credentials: true
 }))
 
