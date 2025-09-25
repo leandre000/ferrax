@@ -5,8 +5,14 @@ import { sendMail } from '../config/email.js'
 import { getFirebaseAuth } from '../config/firebase.js'
 import { logger } from '../config/logger.js'
 
+const validatePhoneNumber = (phone) => {
+    const phoneRegex = /^\+?[1-9]\d{1,14}$/; // Matches E.164 international phone number format
+    return phoneRegex.test(phone);
+}
+
 export const register = async (req, res) => {
     const { fullname, email, phone, password } = req.body;
+    if (!validatePhoneNumber(phone)) return res.status(400).json({ message: "Invalid phone number" });
     try {
         const existingUser = await User.findOne({ $or: [{ email: email }, { phone: phone }] });
         if (existingUser) return res.status(403).json({ message: "User already exists" });
