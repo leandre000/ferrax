@@ -9,7 +9,7 @@ const carSchema = new mongoose.Schema({
   reservedUntil: { type: Date },
   reservedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   mileage: { type: Number, default: 0 },
-  vin: { type: String, unique: true, sparse: true, trim: true },
+  vin: { type: String, sparse: true, trim: true },
   description: { type: String, default: '' },
   images: [{ type: String }],
   primaryImage: { type: String, default: '' },

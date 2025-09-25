@@ -2,6 +2,7 @@ import express from 'express'
 import dotenv from 'dotenv'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import http from 'http'
 import { connectDB } from './config/db.js'
 import { logger } from './config/logger.js'
 import pinoHttp from 'pino-http'
@@ -9,13 +10,16 @@ import authRoutes from './routes/auth.routes.js'
 import carRoutes from './routes/car.routes.js'
 import bookingRoutes from './routes/booking.routes.js'
 import orderRoutes from './routes/order.routes.js'
+import messageRoutes from './routes/message.routes.js'
 import webhookRoutes from './routes/webhook.routes.js'
 import userRoutes from './routes/user.routes.js'
 import { auditLogger } from './middlewares/audit.middleware.js'
+import { initializeSocket } from './services/socket.service.js'
 
 dotenv.config()
 
 const app = express()
+const server = http.createServer(app)
 
 // Request logging with request id
 app.use(pinoHttp({
@@ -47,6 +51,10 @@ app.use('/api/cars', carRoutes)
 app.use('/api/bookings', bookingRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/users', userRoutes)
+app.use('/api/messages', messageRoutes)
+
+// Initialize WebSocket
+initializeSocket(server)
 
 // Health check
 app.get('/health', (req, res) => { res.json({ status: 'ok' }) })
@@ -63,7 +71,7 @@ app.use((err, req, res, next) => {
 
 connectDB()
   .then(() => {
-    app.listen(PORT, () => logger.info({ port: PORT }, 'Server started'))
+    server.listen(PORT, () => logger.info({ port: PORT }, 'Server started with WebSocket support'))
   })
   .catch((e) => {
     logger.error({ err: e }, 'Failed to start server')
