@@ -34,7 +34,7 @@ app.use('/api/webhooks', webhookRoutes)
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-  origin: process.env.CLIENT_URL || "https://carhub-rw.vercel.app",
+  origin: process.env.CLIENT_URL || "https://carhub-rw.vercel.app" || "https://ww.car-connect.rw",
   credentials: true
 }))
 
