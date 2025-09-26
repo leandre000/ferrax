@@ -37,9 +37,12 @@ app.use('/api/webhooks', webhookRoutes)
 app.use(express.json())
 app.use(cookieParser())
 
-// CORS configuration - allow all origins explicitly
+// CORS configuration - allow all origins with credentials
 const corsOptions = {
-  origin: '*', // Explicitly allow all origins
+  origin: (origin, callback) => {
+    // Allow all origins when credentials are needed
+    callback(null, true)
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Auth-Token', 'X-Request-ID'],
