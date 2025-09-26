@@ -1,12 +1,14 @@
 import { Server } from 'socket.io';
 import { logger } from '../config/logger.js';
 import Message from '../models/message.model.js';
+import { configDotenv } from 'dotenv';
+configDotenv()
 
 class SocketService {
   constructor(server) {
     this.io = new Server(server, {
       cors: {
-        origin: process.env.CLIENT_URL || "https://carhub-rw.vercel.app" || "https://ww.car-connect.rw",
+        origin: (process.env.CLIENT_URLS || "").split(',').map(origin => origin.trim()).filter(origin => origin !== ''),
         methods: ["GET", "POST"],
         credentials: true
       }
