@@ -25,6 +25,11 @@ export const register = async (req, res) => {
             phone: phone,
             password: hashedPassword
         });
+        const verificationCode = Math.floor(Math.random() * 100000)
+        const message = `Your OTP is ${verificationCode}`
+        await sendPhoneVerificationCode(user.phone, message)
+        user.otpCode = verificationCode
+        user.otpExpiresAt = Date.now() + 60 * 60 * 1000 // 1 hour
         await user.save()
         generateTokenAndSetCookie(user._id, res)
         res.status(201).json({ message: 'Registration successful', user: { id: user._id, fullname: user.fullname, email: user.email, phone: user.phone, role: user.role } })
@@ -41,13 +46,7 @@ export const login = async (req, res) => {
         if (!user) return res.status(404).json({ message: "User not found" });
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) return res.status(400).json({ message: "Invalid password" });
-        // Frontend will trigger Twilio SMS for this phone.
-        const verificationCode = Math.floor(Math.random() * 100000)
-        const message = `Your OTP is ${verificationCode}`
-        await sendPhoneVerificationCode(message)
-        user.otpCode = verificationCode
-        user.otpExpiresAt = Date.now() + 60 * 60 * 1000 // 1 hour
-        await user.save()
+        generateTokenAndSetCookie(user._id, res)
         res.status(200).json({ message: 'Proceed with phone OTP', success: true, requiresOtp: true, phone: user.phone })
     } catch (error) {
         logger.error({ err: error, phone }, 'Login failed')
