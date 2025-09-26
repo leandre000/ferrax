@@ -37,8 +37,16 @@ app.use('/api/webhooks', webhookRoutes)
 // Middleware
 app.use(express.json())
 app.use(cookieParser())
+const allowedOrigins = (process.env.CLIENT_URLS || '').split(',').map(origin => origin.trim()).filter(origin => origin !== '');
+console.log(allowedOrigins)
 app.use(cors({
-  origin: process.env.CLIENT_URL || "https://carhub-rw.vercel.app" || "https://www.car-connect.rw" || "https://carconnect.rw",
+  origin: (origin, callback) => {
+    if (allowedOrigins.some(allowedOrigin => allowedOrigin === origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }))
 
