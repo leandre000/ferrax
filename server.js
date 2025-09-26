@@ -31,25 +31,25 @@ app.use(pinoHttp({
   }
 }))
 
-// Webhooks must be mounted before json parser for raw body
 app.use('/api/webhooks', webhookRoutes)
 
 // Middleware
 app.use(express.json())
 app.use(cookieParser())
-const allowedOrigins = (process.env.CLIENT_URLS || '').split(',').map(origin => origin.trim()).filter(origin => origin !== '');
-console.log(allowedOrigins)
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.some(allowedOrigin => allowedOrigin === origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS', origin));
-    }
-  },
-  credentials: true
-}))
+
+// CORS configuration - allow all origins
+const corsOptions = {
+  origin: true, // Allow all origins
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Auth-Token'],
+  exposedHeaders: ['Content-Range', 'X-Total-Count']
+}
+
+app.use(cors(corsOptions))
+
+// Handle preflight requests
+app.options('*', cors(corsOptions))
 
 // Audit logging
 app.use(auditLogger)

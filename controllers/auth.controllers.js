@@ -1,8 +1,6 @@
 import User from "../models/user.model.js";
 import bcrypt from 'bcryptjs'
 import { generateTokenAndSetCookie } from '../utils/cookie.utils.js'
-// import { sendMail } from '../config/email.js'
-// import { getFirebaseAuth } from '../config/firebase.js'
 import { logger } from '../config/logger.js'
 import { sendPhoneVerificationCode } from "../config/twilio.js";
 
@@ -12,16 +10,15 @@ const validatePhoneNumber = (phone) => {
 }
 
 export const register = async (req, res) => {
-    const { fullname, email, phone, password } = req.body;
+    const { fullname, phone, password } = req.body;
     if (!validatePhoneNumber(phone)) return res.status(400).json({ message: "Invalid phone number" });
     try {
-        const existingUser = await User.findOne({ $or: [{ email: email }, { phone: phone }] });
+        const existingUser = await User.findOne({ $or: [{ phone: phone }] });
         if (existingUser) return res.status(403).json({ message: "User already exists" });
         const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(password, salt);
         const user = new User({
             fullname: fullname,
-            email: email,
             phone: phone,
             password: hashedPassword
         });
@@ -32,9 +29,9 @@ export const register = async (req, res) => {
         user.otpExpiresAt = Date.now() + 60 * 60 * 1000 // 1 hour
         await user.save()
         generateTokenAndSetCookie(user._id, res)
-        res.status(201).json({ message: 'Registration successful', user: { id: user._id, fullname: user.fullname, email: user.email, phone: user.phone, role: user.role } })
+        res.status(201).json({ message: 'Proceed to check your phone for OTP', success: true, otpSent : true })
     } catch (error) {
-        logger.error({ err: error, email, phone }, 'Registration failed')
+        logger.error({ err: error, phone }, 'Registration failed')
         return res.status(500).json({ message: "Internal server error" })
     }
 };
@@ -47,7 +44,12 @@ export const login = async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) return res.status(400).json({ message: "Invalid password" });
         generateTokenAndSetCookie(user._id, res)
-        res.status(200).json({ message: 'Proceed with phone OTP', success: true, requiresOtp: true, phone: user.phone })
+        res.status(200).json({ message: 'Login successful', success: true, user : {
+            id : user._id,
+            fullname : user.fullname,
+            phone : user.phone,
+            role : user.role
+        } })
     } catch (error) {
         logger.error({ err: error, phone }, 'Login failed')
         return res.status(500).json({ message: "Internal server error" })
@@ -72,8 +74,8 @@ export const verifyOtp = async (req, res) => {
         if (user.otpCode !== otpCode) return res.status(400).json({ message: 'Invalid OTP code' })
         if (user.otpExpiresAt < Date.now()) return res.status(400).json({ message: 'OTP code expired' })
         generateTokenAndSetCookie(user._id, res)
-        logger.info({ userId: user._id }, 'Login successful')
-        res.status(200).json({ message: 'Login successful', success: true })
+        logger.info({ userId: user._id }, 'User registered successfully')
+        res.status(200).json({ message: 'Registration successful', success: true, otpVerified : true })
     } catch (error) {
         logger.error({ err: error, phone }, 'OTP verification failed')
         return res.status(500).json({ message: 'Internal server error' })
