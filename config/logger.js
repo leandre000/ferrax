@@ -1,4 +1,6 @@
 import pino from 'pino'
+import { configDotenv } from 'dotenv';
+configDotenv()
 
 const level = process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug')
 const isPretty = process.env.NODE_ENV !== 'production' && process.env.LOG_PRETTY !== 'false'
@@ -7,7 +9,7 @@ export const logger = pino({
   level,
   base: {
     service: 'carhubconnect',
-    env: process.env.NODE_ENV || 'development'
+    env: process.env.NODE_ENV
   },
   transport: isPretty
     ? {

@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-import { logger } from './logger.js'
+import { logger } from './logger.js';
+import { configDotenv } from "dotenv";
+configDotenv()
 
 export const connectDB = async () => {
   const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/carhubconnect";
