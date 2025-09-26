@@ -37,19 +37,16 @@ app.use('/api/webhooks', webhookRoutes)
 app.use(express.json())
 app.use(cookieParser())
 
-// CORS configuration - allow all origins
+// CORS configuration - allow all origins explicitly
 const corsOptions = {
-  origin: true, // Allow all origins
+  origin: '*', // Explicitly allow all origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Auth-Token'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-Auth-Token', 'X-Request-ID'],
   exposedHeaders: ['Content-Range', 'X-Total-Count']
 }
 
 app.use(cors(corsOptions))
-
-// Handle preflight requests
-app.options('*', cors(corsOptions))
 
 // Audit logging
 app.use(auditLogger)
