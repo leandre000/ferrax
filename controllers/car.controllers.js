@@ -48,7 +48,7 @@ export const getCars = async (req, res) => {
     res.json({ items: cars, total: count, page: Number(page), limit: Number(limit) })
   } catch (error) {
     logger.error({ err: error, query: req.query }, 'Failed to fetch cars')
-    res.status(500).json({ message: 'Failed to fetch cars' })
+    res.status(500).json({ message: 'Failed to fetch cars', error: error })
   }
 }
 
@@ -81,7 +81,7 @@ export const updateCar = async (req, res) => {
     res.json(car)
   } catch (error) {
     logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to update car')
-    res.status(400).json({ message: 'Failed to update car' })
+    res.status(400).json({ message: 'Failed to update car', error: error })
   }
 }
 
@@ -98,7 +98,7 @@ export const deleteCar = async (req, res) => {
     res.json({ message: 'Car deleted' })
   } catch (error) {
     logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to delete car')
-    res.status(400).json({ message: 'Failed to delete car' })
+    res.status(400).json({ message: 'Failed to delete car', error: error.message })
   }
 }
 
