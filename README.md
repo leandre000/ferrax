@@ -72,6 +72,14 @@ npm run dev
 - GET `/api/orders` (admin)
 - GET `/api/orders/:id` (buyer/admin)
 
+## Messaging (auth required)
+- GET `/api/messages/conversations` - Get all conversations for the current user
+- GET `/api/messages/:carId/:recipientId` - Get messages between current user and another user for a specific car
+- POST `/api/messages` - Send a new message
+  - Body: { recipientId, carId, content }
+- POST `/api/messages/mark-read` - Mark messages as read
+  - Body: { messageIds: [id1, id2, ...] }
+
 ## Webhooks
 - POST `/api/webhooks/stripe` (raw body) handles `checkout.session.completed`
 
