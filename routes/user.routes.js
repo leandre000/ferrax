@@ -4,7 +4,7 @@ import { listUsers, updateUserRole } from '../controllers/user.controllers.js'
 
 const router = express.Router()
 
-router.get('/', protect, requireAdmin, listUsers)
+router.get('/', protect, listUsers)
 router.put('/:id/role', protect, requireAdmin, updateUserRole)
 
 export default router
