@@ -7,6 +7,7 @@ configDotenv()
 class SocketService {
   constructor(server) {
     this.io = new Server(server, {
+      path : '/socket.io',
       cors: {
         origin: (process.env.CLIENT_URLS || "").split(',').map(origin => origin.trim()).filter(origin => origin !== ''),
         methods: ["GET", "POST"],
