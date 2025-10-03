@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import { logger } from '../config/logger.js';
+import User from '../models/user.model.js';
 import Message from '../models/message.model.js';
 import { configDotenv } from 'dotenv';
 configDotenv()
@@ -7,7 +8,7 @@ configDotenv()
 class SocketService {
   constructor(server) {
     this.io = new Server(server, {
-      path : '/socket.io',
+      path: '/socket.io',
       cors: {
         origin: (process.env.CLIENT_URLS || "").split(',').map(origin => origin.trim()).filter(origin => origin !== ''),
         methods: ["GET", "POST"],
@@ -26,15 +27,20 @@ class SocketService {
         if (!token) {
           return next(new Error('Authentication error'));
         }
-        
+
         // Verify token and get user
-        const user = await verifyToken(token);
-        if (!user) {
+        const decoded = await verifyToken(token);
+        if (!decoded?.id) {
           return next(new Error('Authentication error'));
         }
 
-        // Attach user to socket
-        socket.user = user;
+        // Load user document and attach limited fields
+        const userDoc = await User.findById(decoded.id).select('_id fullname');
+        if (!userDoc) {
+          return next(new Error('Authentication error'));
+        }
+
+        socket.user = { _id: userDoc._id, fullname: userDoc.fullname };
         next();
       } catch (error) {
         logger.error({ error }, 'WebSocket authentication error');
@@ -44,7 +50,7 @@ class SocketService {
 
     this.io.on('connection', (socket) => {
       const userId = socket.user._id.toString();
-      
+
       // Join user's personal room
       socket.join(userId);
       logger.info(`User ${userId} connected to WebSocket`);
@@ -173,7 +179,9 @@ async function verifyToken(token) {
     // Replace this with your actual token verification logic
     // This is a placeholder - implement according to your auth system
     const jwt = (await import('jsonwebtoken')).default;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET is not configured');
+    const decoded = jwt.verify(token, secret);
     return decoded;
   } catch (error) {
     logger.error({ error }, 'Token verification failed');

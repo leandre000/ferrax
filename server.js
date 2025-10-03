@@ -15,6 +15,8 @@ import webhookRoutes from './routes/webhook.routes.js'
 import userRoutes from './routes/user.routes.js'
 import { auditLogger } from './middlewares/audit.middleware.js'
 import { initializeSocket } from './services/socket.service.js'
+import swaggerUi from 'swagger-ui-express'
+import swaggerJsdoc from 'swagger-jsdoc'
 
 dotenv.config()
 
@@ -37,11 +39,14 @@ app.use('/api/webhooks', webhookRoutes)
 app.use(express.json())
 app.use(cookieParser())
 
-// CORS configuration - allow all origins with credentials
+// CORS configuration - restrict to CLIENT_URLS list with credentials
+const allowedOrigins = (process.env.CLIENT_URLS || '').split(',').map(u => u.trim()).filter(Boolean)
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow all origins when credentials are needed
-    callback(null, true)
+    if (!origin) return callback(null, true) // allow non-browser clients
+    if (allowedOrigins.length === 0) return callback(new Error('CORS not configured'))
+    if (allowedOrigins.includes(origin)) return callback(null, true)
+    return callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -55,6 +60,16 @@ app.use(cors(corsOptions))
 app.use(auditLogger)
 
 // Routes
+// Swagger docs
+const swaggerSpec = swaggerJsdoc({
+  definition: {
+    openapi: '3.0.0',
+    info: { title: 'CarHubConnect API', version: '1.0.0' }
+  },
+  apis: ['./routes/*.js', './controllers/*.js', './models/*.js']
+})
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
 app.use('/api/auth', authRoutes)
 app.use('/api/cars', carRoutes)
 app.use('/api/bookings', bookingRoutes)

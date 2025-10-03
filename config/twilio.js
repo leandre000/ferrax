@@ -5,12 +5,12 @@ configDotenv()
 export const sendPhoneVerificationCode = async (phone, message) => {
     try {
         await twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN).messages.create({
-            body : message,
-            to : phone,
-            from : process.env.TWILIO_FROM_PHONE_NUMBER
+            body: message,
+            to: phone,
+            from: process.env.TWILIO_FROM_PHONE_NUMBER
         })
     } catch (error) {
-        throw new Error(error)
+        throw error
     }
 }
 
