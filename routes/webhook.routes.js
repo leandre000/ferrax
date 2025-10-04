@@ -3,9 +3,41 @@ import Stripe from 'stripe'
 import Order from '../models/order.model.js'
 import Car from '../models/car.model.js'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-06-20' })
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: "2024-06-20" })
 const router = express.Router()
 
+/**
+ * @openapi
+ * /api/webhooks/stripe:
+ *   post:
+ *     summary: Stripe webhook endpoint for payment processing
+ *     description: Handles Stripe webhook events, particularly checkout.session.completed events
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Stripe webhook event payload
+ *     headers:
+ *       stripe-signature:
+ *         required: true
+ *         schema:
+ *           type: string
+ *           description: Stripe signature for webhook verification
+ *     responses:
+ *       200:
+ *         description: Webhook processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 received:
+ *                   type: boolean
+ *       400:
+ *         description: Webhook verification failed
+ */
 router.post('/stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature']
   try {

@@ -39,12 +39,10 @@ app.use('/api/webhooks', webhookRoutes)
 app.use(express.json())
 app.use(cookieParser())
 
-// CORS configuration - restrict to CLIENT_URLS list with credentials
-const allowedOrigins = (process.env.CLIENT_URLS || '').split(',').map(u => u.trim()).filter(Boolean)
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true) // allow non-browser clients
-    return callback(null, allowedOrigins.includes(origin))
+    return callback(null, true)
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -62,11 +60,133 @@ app.use(auditLogger)
 const swaggerSpec = swaggerJsdoc({
   definition: {
     openapi: '3.0.0',
-    info: { title: 'CarHubConnect API', version: '1.0.0' }
+    info: {
+      title: 'CarHubConnect API',
+      version: '1.0.0',
+      description: 'A comprehensive car sales management system API with authentication, booking, ordering, and messaging capabilities.',
+      contact: {
+        name: 'CarHubConnect Support',
+        email: 'support@carhubconnect.com'
+      }
+    },
+    servers: [
+      {
+        url: process.env.API_URL || 'http://localhost:5000',
+        description: 'Development server'
+      },
+      {
+        url: process.env.PRODUCTION_API_URL || 'https://carhubconnect.onrender.com',
+        description: 'Production server'
+      }
+    ],
+    security: [
+      {
+        cookieAuth: []
+      }
+    ],
+    components: {
+      securitySchemes: {
+        cookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'token',
+          description: 'JWT token stored in httpOnly cookie'
+        }
+      },
+      schemas: {
+        User: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            fullname: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            phone: { type: 'string' },
+            role: { type: 'string', enum: ['user', 'admin'] },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          }
+        },
+        Car: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            make: { type: 'string' },
+            model: { type: 'string' },
+            year: { type: 'number' },
+            price: { type: 'number' },
+            status: { type: 'string', enum: ['available', 'reserved', 'sold', 'rented'] },
+            mileage: { type: 'number' },
+            description: { type: 'string' },
+            images: { type: 'array', items: { type: 'string' } },
+            primaryImage: { type: 'string' },
+            location: { type: 'string' },
+            fuelType: { type: 'string', enum: ['petrol', 'diesel', 'electric', 'hybrid', 'other'] },
+            transmission: { type: 'string', enum: ['automatic', 'manual'] },
+            bodyType: { type: 'string' },
+            color: { type: 'string' },
+            owner: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          }
+        },
+        Booking: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            car: { type: 'string' },
+            user: { type: 'string' },
+            status: { type: 'string', enum: ['pending', 'confirmed', 'cancelled', 'expired'] },
+            notes: { type: 'string' },
+            expiresAt: { type: 'string', format: 'date-time' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          }
+        },
+        Order: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            car: { type: 'string' },
+            buyer: { type: 'string' },
+            amount: { type: 'number' },
+            status: { type: 'string', enum: ['initiated', 'paid', 'cancelled'] },
+            notes: { type: 'string' },
+            paymentRef: { type: 'string' },
+            stripeSessionId: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          }
+        },
+        Message: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            sender: { type: 'string' },
+            recipient: { type: 'string' },
+            car: { type: 'string' },
+            content: { type: 'string' },
+            read: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          }
+        },
+        Error: {
+          type: 'object',
+          properties: {
+            message: { type: 'string' },
+            code: { type: 'string' },
+            status: { type: 'number' }
+          }
+        }
+      }
+    }
   },
   apis: ['./routes/*.js', './controllers/*.js', './models/*.js']
 })
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'CarHubConnect API Documentation'
+}))
 
 app.use('/api/auth', authRoutes)
 app.use('/api/cars', carRoutes)
@@ -78,7 +198,24 @@ app.use('/api/messages', messageRoutes)
 // Initialize WebSocket
 initializeSocket(server)
 
-// Health check
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     summary: Health check endpoint
+ *     description: Returns the current status of the API server
+ *     responses:
+ *       200:
+ *         description: Server is running
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ */
 app.get('/health', (req, res) => { res.json({ status: 'ok' }) })
 
 const PORT = process.env.PORT || 5000

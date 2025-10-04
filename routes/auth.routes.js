@@ -71,7 +71,49 @@ router.post('/login', login)
  *       200: { description: Registration completed }
  */
 router.post('/verify-otp', verifyOtp)
+/**
+ * @openapi
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout user and clear session
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Logged out
+ */
 router.post('/logout', protect, logout)
+
+/**
+ * @openapi
+ * /api/auth/me:
+ *   get:
+ *     summary: Get current user profile
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Not authenticated
+ */
 router.get('/me', protect, me)
 
 export default router
