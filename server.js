@@ -196,7 +196,10 @@ app.use('/api/users', userRoutes)
 app.use('/api/messages', messageRoutes)
 
 // Initialize WebSocket
-initializeSocket(server)
+const socketService = initializeSocket(server)
+
+// Make socket.io instance available to routes
+app.set('io', socketService.getIO())
 
 /**
  * @openapi

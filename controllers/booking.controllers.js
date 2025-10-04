@@ -29,9 +29,10 @@ export const createBooking = async (req, res) => {
 
 export const confirmBooking = async (req, res) => {
   try {
+    const { id } = req.user
     const booking = await Booking.findById(req.params.id).populate('car')
     if (!booking) return res.status(404).json({ message: 'Booking not found' })
-    if (booking.user.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Forbidden' })
+    if (booking.user.toString() !== id.toString()) return res.status(403).json({ message: 'Forbidden' })
     if (booking.status !== 'pending') return res.status(400).json({ message: 'Cannot confirm booking' })
     if (booking.expiresAt.getTime() <= Date.now()) {
       booking.status = 'expired'
@@ -40,10 +41,10 @@ export const confirmBooking = async (req, res) => {
     }
     booking.status = 'confirmed'
     await booking.save()
-    logger.info({ bookingId: booking._id, userId: req.user._id }, 'Booking confirmed')
+    logger.info({ bookingId: booking._id, userId: id }, 'Booking confirmed')
     res.json(booking)
   } catch (error) {
-    logger.error({ err: error, bookingId: req.params.id, userId: req.user?._id }, 'Failed to confirm booking')
+    logger.error({ err: error, bookingId: req.params.id, userId: id }, 'Failed to confirm booking')
     res.status(400).json({ message: 'Failed to confirm booking' })
   }
 }
@@ -76,8 +77,9 @@ export const cancelBooking = async (req, res) => {
 }
 
 export const listMyBookings = async (req, res) => {
+  const { id } = req.user
   try {
-    const bookings = await Booking.find({ user: req.user._id }).populate('car')
+    const bookings = await Booking.find({ user: id }).populate('car')
     res.json(bookings)
   } catch (error) {
     logger.error({ err: error, userId: req.user?._id }, 'Failed to fetch my bookings')
@@ -104,10 +106,11 @@ export const listBookingsAdmin = async (req, res) => {
 
 export const getBookingById = async (req, res) => {
   try {
+    const { id, role } = req.user
     const booking = await Booking.findById(req.params.id).populate('car user', 'make model year fullname email')
     if (!booking) return res.status(404).json({ message: 'Booking not found' })
-    const isOwner = booking.user._id.toString() === req.user._id.toString()
-    const isAdmin = req.user.role === 'admin'
+    const isOwner = booking.user._id.toString() === id.toString()
+    const isAdmin = role === 'admin'
     if (!isOwner && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
     res.json(booking)
   } catch (error) {
