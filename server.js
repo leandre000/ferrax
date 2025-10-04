@@ -44,9 +44,7 @@ const allowedOrigins = (process.env.CLIENT_URLS || '').split(',').map(u => u.tri
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin) return callback(null, true) // allow non-browser clients
-    if (allowedOrigins.length === 0) return callback(new Error('CORS not configured'))
-    if (allowedOrigins.includes(origin)) return callback(null, true)
-    return callback(new Error('Not allowed by CORS'))
+    return callback(null, allowedOrigins.includes(origin))
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],

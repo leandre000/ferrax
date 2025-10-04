@@ -38,4 +38,48 @@ export const updateUserRole = async (req, res) => {
   }
 }
 
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password -otpCode -otpExpiresAt')
+    res.json(users)
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch users')
+    res.status(500).json({ message: 'Failed to fetch users' })
+  }
+}
 
+export const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params
+    const user = await User.findById(id).select('-password -otpCode -otpExpiresAt')
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    res.json(user)
+  } catch (error) {
+    logger.error({ err: error, targetUserId: req.params.id }, 'Failed to fetch user')
+    res.status(500).json({ message: 'Failed to fetch user' })
+  }
+}
+
+export const getUserByPhone = async (req, res) => {
+  try {
+    const { phone } = req.params
+    const user = await User.findOne({ phone }).select('-password -otpCode -otpExpiresAt')
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    res.json(user)
+  } catch (error) {
+    logger.error({ err: error, targetUserPhone: req.params.phone }, 'Failed to fetch user')
+    res.status(500).json({ message: 'Failed to fetch user' })
+  }
+}
+
+export const deleteUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await User.findByIdAndDelete(id).select('-password -otpCode -otpExpiresAt')
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    res.json(user)
+  } catch (error) {
+    logger.error({ err: error, targetUserId: req.params.id }, 'Failed to delete user')
+    res.status(500).json({ message: 'Failed to delete user' })
+  }
+}
