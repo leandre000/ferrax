@@ -27,7 +27,7 @@ export const createCar = async (req, res) => {
 
 export const getCars = async (req, res) => {
   try {
-    const { page = 1, limit = 20, q, status } = req.query
+    const { page = 1, limit = 20, q, status, brand, make } = req.query
     const filter = {}
     if (q) {
       filter.$or = [
@@ -38,6 +38,12 @@ export const getCars = async (req, res) => {
     }
     if (status) {
       filter.status = status
+    }
+    if (brand) {
+      filter.brand = brand
+    }
+    if (make) {
+      filter.make = make
     }
     const cars = await Car.find(filter)
       .sort({ createdAt: -1 })
