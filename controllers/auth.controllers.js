@@ -10,26 +10,21 @@ const validatePhoneNumber = (phone) => {
 }
 
 export const register = async (req, res) => {
-    const { fullname, email, phone, password } = req.body;
+    const { fullname, phone, password } = req.body;
     if (!fullname || typeof fullname !== 'string' || fullname.trim().length < 2) {
         return res.status(400).json({ message: 'Invalid fullname' })
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!email || !emailRegex.test(email)) {
-        return res.status(400).json({ message: 'Invalid email' })
     }
     if (!validatePhoneNumber(phone)) return res.status(400).json({ message: "Invalid phone number" });
     if (!password || typeof password !== 'string' || password.length < 8) {
         return res.status(400).json({ message: 'Password must be at least 8 characters' })
     }
     try {
-        const existingUser = await User.findOne({ $or: [{ phone }, { email }] });
+        const existingUser = await User.findOne({ phone });
         if (existingUser) return res.status(403).json({ message: "User already exists" });
         const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(password, salt);
         const user = new User({
             fullname: fullname.trim(),
-            email: email.toLowerCase().trim(),
             phone: phone.trim(),
             password: hashedPassword
         });
@@ -43,7 +38,7 @@ export const register = async (req, res) => {
         // Do NOT issue JWT yet; wait until OTP verification completes
         res.status(201).json({ message: 'Proceed to check your phone for OTP', success: true, otpSent: true })
     } catch (error) {
-        logger.error({ err: error, phone, email }, 'Registration failed')
+        logger.error({ err: error, phone }, 'Registration failed')
         return res.status(500).json({ message: "Internal server error" })
     }
 };
