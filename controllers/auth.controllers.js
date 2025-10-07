@@ -29,14 +29,14 @@ export const register = async (req, res) => {
             password: hashedPassword
         });
         // Always use a 6-digit, zero-padded string OTP
-        const verificationCode = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
-        const message = `Your OTP is ${verificationCode}`
-        await sendPhoneVerificationCode(user.phone, message)
-        user.otpCode = verificationCode
-        user.otpExpiresAt = Date.now() + 60 * 60 * 1000 // 1 hour
-        await user.save()
+        // const verificationCode = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
+        // const message = `Your OTP is ${verificationCode}`
+        // await sendPhoneVerificationCode(user.phone, message)
+        // user.otpCode = verificationCode
+        // user.otpExpiresAt = Date.now() + 60 * 60 * 1000 // 1 hour
+        await user.save();
         // Do NOT issue JWT yet; wait until OTP verification completes
-        res.status(201).json({ message: 'Proceed to check your phone for OTP', success: true, otpSent: true })
+        res.status(201).json({ message: 'User registered successfully', success: true })
     } catch (error) {
         logger.error({ err: error, phone }, 'Registration failed')
         return res.status(500).json({ message: "Internal server error" })
