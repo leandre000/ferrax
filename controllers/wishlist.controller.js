@@ -3,12 +3,12 @@ import { logger } from "../config/logger.js";
 
 export const addToWishlist = async (req, res) => {
     const { carId } = req.body;
-    const { id } = req.user;
+    const { _id } = req.user;
 
     try {
-        let wishlist = await Wishlist.findOne({ user: id });
+        let wishlist = await Wishlist.findOne({ user: _id });
         if (!wishlist) {
-            wishlist = new Wishlist({ user: id, cars: [] });
+            wishlist = new Wishlist({ user: _id, cars: [] });
         }
         if (!wishlist.cars.includes(carId)) {
             wishlist.cars.push(carId);
@@ -25,10 +25,10 @@ export const addToWishlist = async (req, res) => {
 
 export const removeFromWishlist = async (req, res) => {
     const { carId } = req.body;
-    const { id } = req.user;
+    const { _id } = req.user;
 
     try {
-        let wishlist = await Wishlist.findOne({ user: id });
+        let wishlist = await Wishlist.findOne({ user: _id });
         if (!wishlist) {
             return res.status(200).json({ message: 'Car not in wishlist', success: true });
         }
@@ -46,9 +46,9 @@ export const removeFromWishlist = async (req, res) => {
 };
 
 export const getWishlist = async (req, res) => {
-    const { id } = req.user;
+    const { _id } = req.user;
     try {
-        const wishlist = await Wishlist.findOne({ user: id }).populate('cars');
+        const wishlist = await Wishlist.findOne({ user: _id }).populate('cars');
         return res.status(200).json({ message: 'Wishlist retrieved successfully', success: true, data: wishlist });
     } catch (error) {
         logger.error({ err : error }, 'Error getting wishlist');
@@ -57,9 +57,9 @@ export const getWishlist = async (req, res) => {
 };
 
 export const deleteWishlist = async (req, res) => {
-    const { id } = req.user;
+    const { _id } = req.user;
     try {
-        const wishlist = await Wishlist.findOneAndDelete({ user: id });
+        const wishlist = await Wishlist.findOneAndDelete({ user: _id });
         if (!wishlist) {
             return res.status(200).json({ message: 'Wishlist not found', success: true });
         }
@@ -71,9 +71,9 @@ export const deleteWishlist = async (req, res) => {
 };
 
 export const clearWishlist = async (req, res) => {
-    const { id } = req.user;
+    const { _id } = req.user;
     try {
-        const wishlist = await Wishlist.findOne({ user: id });
+        const wishlist = await Wishlist.findOne({ user: _id });
         if (!wishlist) {
             return res.status(200).json({ message: 'Wishlist not found', success: true });
         }
