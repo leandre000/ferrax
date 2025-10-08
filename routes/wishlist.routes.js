@@ -1,5 +1,6 @@
 import express from 'express';
 import { addToWishlist, clearWishlist, deleteWishlist, getWishlist, removeFromWishlist } from '../controllers/wishlist.controller.js';
+import { protect } from '../middlewares/auth.middleware.js';
 
 const wishlistRouter = express.Router();
 
@@ -38,7 +39,7 @@ const wishlistRouter = express.Router();
  *       500:
  *         description: Server error
  */
-wishlistRouter.post('/add', addToWishlist);
+wishlistRouter.post('/add', protect,addToWishlist);
 
 /**
  * @openapi
@@ -75,7 +76,7 @@ wishlistRouter.post('/add', addToWishlist);
  *       500:
  *         description: Server error
  */
-wishlistRouter.post('/remove', removeFromWishlist);
+wishlistRouter.post('/remove', protect, removeFromWishlist);
 
 /**
  * @openapi
@@ -102,7 +103,7 @@ wishlistRouter.post('/remove', removeFromWishlist);
  *       500:
  *         description: Server error
  */
-wishlistRouter.get('/', getWishlist);
+wishlistRouter.get('/',protect, getWishlist);
 
 /**
  * @openapi
@@ -127,7 +128,7 @@ wishlistRouter.get('/', getWishlist);
  *       500:
  *         description: Server error
  */
-wishlistRouter.delete('/clear', clearWishlist);
+wishlistRouter.delete('/clear', protect, clearWishlist);
 
 /**
  * @openapi
@@ -152,6 +153,6 @@ wishlistRouter.delete('/clear', clearWishlist);
  *       500:
  *         description: Server error
  */
-wishlistRouter.delete('/', deleteWishlist);
+wishlistRouter.delete('/', protect, deleteWishlist);
 
 export default wishlistRouter;
