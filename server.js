@@ -18,6 +18,7 @@ import { initializeSocket } from './services/socket.service.js'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
 import wishlistRouter from './routes/wishlist.routes.js'
+import testDriveRouter from './routes/test-drive.routes.js'
 
 dotenv.config()
 
@@ -194,6 +195,7 @@ app.use('/api/cars', carRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/test-drives', testDriveRouter)
 app.use('/api/messages', messageRoutes);
 app.use('/api/wishlist', wishlistRouter);
 

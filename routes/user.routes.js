@@ -179,7 +179,7 @@ router.get('/:id', protect, getUserById);
  *       403:
  *         description: Admin access required
  */
-router.get('/all', protect, requireAdmin, getAllUsers);
+router.get('/all', protect, getAllUsers);
 
 /**
  * @openapi
