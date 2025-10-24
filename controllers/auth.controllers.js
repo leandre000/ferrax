@@ -10,29 +10,40 @@ const validatePhoneNumber = (phone) => {
 }
 
 export const register = async (req, res) => {
-    const { fullname, phone, password } = req.body;
+    const { fullname, email, phone, password } = req.body;
     if (!fullname || typeof fullname !== 'string' || fullname.trim().length < 2) {
         return res.status(400).json({ message: 'Invalid fullname' })
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Invalid email' })
     }
     if (!validatePhoneNumber(phone)) return res.status(400).json({ message: "Invalid phone number" });
     if (!password || typeof password !== 'string' || password.length < 8) {
         return res.status(400).json({ message: 'Password must be at least 8 characters' })
     }
     try {
-        const existingUser = await User.findOne({ phone });
+        const existingUser = await User.findOne({ $or: [{ phone }, { email }] });
         if (existingUser) return res.status(403).json({ message: "User already exists" });
         const salt = await bcrypt.genSalt(12);
         const hashedPassword = await bcrypt.hash(password, salt);
         const user = new User({
             fullname: fullname.trim(),
+            email: email.toLowerCase().trim(),
             phone: phone.trim(),
             password: hashedPassword
         });
-        await user.save();
+        // Always use a 6-digit, zero-padded string OTP
+        const verificationCode = String(Math.floor(Math.random() * 1000000)).padStart(6, '0')
+        const message = `Your OTP is ${verificationCode}`
+        await sendPhoneVerificationCode(user.phone, message)
+        user.otpCode = verificationCode
+        user.otpExpiresAt = Date.now() + 60 * 60 * 1000 // 1 hour
+        await user.save()
         // Do NOT issue JWT yet; wait until OTP verification completes
-        res.status(201).json({ message: 'User registered successfully', success: true })
+        res.status(201).json({ message: 'Proceed to check your phone for OTP', success: true, otpSent: true })
     } catch (error) {
-        logger.error({ err: error, phone }, 'Registration failed')
+        logger.error({ err: error, phone, email }, 'Registration failed')
         return res.status(500).json({ message: "Internal server error" })
     }
 };
@@ -89,23 +100,5 @@ export const verifyOtp = async (req, res) => {
     } catch (error) {
         logger.error({ err: error, phone }, 'OTP verification failed')
         return res.status(500).json({ message: 'Internal server error' })
-    }
-}
-
-export const forgotPassword = async (req, res) => {
-    const { phone } = req.body
-    try {
-        if (!validatePhoneNumber(phone)) return res.status(400).json({ message: 'Invalid phone number' })
-        const user = await User.findOne({ phone })
-        if (!user) return res.status(404).json({ message: 'User not found' })
-        const otpCode = Math.floor(100000 + Math.random() * 900000)
-        const otpExpiresAt = Date.now() + 10 * 60 * 1000
-        user.otpCode = otpCode
-        user.otpExpiresAt = otpExpiresAt
-        await user.save()
-        sendPhoneVerificationCode(phone, otpCode)
-        res.status(200).json({ message: 'OTP sent successfully', success: true })
-    } catch (error) {
-        logger.error({ err: error, phone }, 'Forgot password failed')
     }
 }

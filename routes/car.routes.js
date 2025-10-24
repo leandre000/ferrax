@@ -1,6 +1,6 @@
 import express from 'express'
-import { protect, requireAdmin } from '../middlewares/auth.middleware.js'
-import { createCar, getCars, getCarById, updateCar, deleteCar, addCarImages, removeCarImage, setPrimaryImage, listMyCars, reorderImages, listCar, verifyListedCar, getListedCars, rejectListedCar } from '../controllers/car.controllers.js'
+import { protect } from '../middlewares/auth.middleware.js'
+import { createCar, getCars, getCarById, updateCar, deleteCar, addCarImages, removeCarImage, setPrimaryImage, listMyCars, reorderImages } from '../controllers/car.controllers.js'
 
 const router = express.Router()
 
@@ -407,131 +407,7 @@ router.post('/:id/primary-image', protect, setPrimaryImage)
  *       404:
  *         description: Car not found
  */
-router.post('/:id/images/reorder', protect, reorderImages);
-
-/**` */
-/**
- * @openapi
- * /api/cars/list:
- *   post:
- *     summary: List a car for sale
- *     security:
- *       - cookieAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [id]
- *             properties:
- *               id:
- *                 type: string
- *                 description: ID of the car to list
- *     responses:
- *       200:
- *         description: Car listed successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Car'
- *       400:
- *         description: Car is already listed
- *       403:
- *         description: Forbidden - not the car owner or admin
- *       404:
- *         description: Car not found
- */
-router.post('/list', protect, listCar);
-
-/**
- * @openapi
- * /api/cars/{id}/verify:
- *   post:
- *     summary: Verify a listed car
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       
- *       - in : path
- *          name: id
- *          required: true
- *          schema: { type: string }
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [id]
- *             properties:
- *               id:
- *                 type: string
- *                 description: ID of the car to verify
- *       
- *     responses:
- *       200:
- *         description: Car verified successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Car'
- *       400:
- *         description: Car is not listed
- *       403:
- *         description: Forbidden - not an admin
- *       404:
- *         description: Car not found
- */
-router.post('/:id/verify', protect, requireAdmin, verifyListedCar);
-
-/**
- * @openapi
- * /api/cars/listed:
- *   get:
- *     summary: Get all listed cars
- *     security:
- *       - cookieAuth: []
- *     responses:
- *       200:
- *         description: Listed cars retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Car'
- *       403:
- *         description: Forbidden - not an admin
- */
-router.get('/listed', protect, requireAdmin, getListedCars);
-
-/**
- * @openapi
- * /api/cars/{id}/reject:
- *   post:
- *     summary: Reject a listed car
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200:
- *         description: Car rejected successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Car'
- *       400:
- *         description: Car is not listed
- *       403:
- *         description: Forbidden - not an admin
- *       404:
- *         description: Car not found
- */
-router.post('/:id/reject', protect, requireAdmin, rejectListedCar)
+router.post('/:id/images/reorder', protect, reorderImages)
 
 export default router
+

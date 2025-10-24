@@ -1,6 +1,6 @@
 import express from 'express'
 import { protect } from '../middlewares/auth.middleware.js'
-import { createOrder, listMyOrders, getOrderById, cancelOrder, listAllOrders } from '../controllers/order.controllers.js'
+import { createOrder, payOrder, listMyOrders, createCheckoutSession, getOrderById, listOrdersAdmin, cancelOrder } from '../controllers/order.controllers.js'
 import { requireAdmin } from '../middlewares/auth.middleware.js'
 
 const router = express.Router()
@@ -35,6 +35,73 @@ const router = express.Router()
  *         description: Car not found
  */
 router.post('/', protect, createOrder)
+
+/**
+ * @openapi
+ * /api/orders/checkout:
+ *   post:
+ *     summary: Create Stripe checkout session for an order
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [orderId, successUrl, cancelUrl]
+ *             properties:
+ *               orderId:
+ *                 type: string
+ *               successUrl:
+ *                 type: string
+ *               cancelUrl:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Checkout session created
+ *       400:
+ *         description: Invalid order status
+ *       403:
+ *         description: Forbidden - not the order buyer
+ *       404:
+ *         description: Order not found
+ */
+router.post('/checkout', protect, createCheckoutSession)
+
+/**
+ * @openapi
+ * /api/orders/{id}/pay:
+ *   post:
+ *     summary: Complete payment for an order
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               paymentRef:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Payment completed successfully
+ *       400:
+ *         description: Invalid order status
+ *       403:
+ *         description: Forbidden - not the order buyer
+ *       404:
+ *         description: Order not found
+ */
+router.post('/:id/pay', protect, payOrder)
 
 /**
  * @openapi
@@ -86,7 +153,7 @@ router.get('/:id', protect, getOrderById)
  *       403:
  *         description: Admin access required
  */
-router.get('/', protect, requireAdmin, listAllOrders)
+router.get('/', protect, requireAdmin, listOrdersAdmin)
 
 /**
  * @openapi
@@ -127,3 +194,4 @@ router.post('/:id/cancel', protect, cancelOrder)
 router.get('/me', protect, listMyOrders)
 
 export default router
+

@@ -8,7 +8,7 @@ const router = express.Router()
  * @openapi
  * /api/auth/register:
  *   post:
- *     summary: Register a new user with email/phone/password and go to login
+ *     summary: Register a new user with email/phone/password and send OTP
  *     requestBody:
  *       required: true
  *       content:

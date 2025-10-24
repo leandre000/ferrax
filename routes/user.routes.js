@@ -1,6 +1,6 @@
 import express from 'express'
 import { protect, requireAdmin } from '../middlewares/auth.middleware.js'
-import { listUsers, updateUserRole, getUserById, getAllUsers, getUserByPhone, deleteUser, changeMyPassword, changeUserPassword } from '../controllers/user.controllers.js'
+import { listUsers, updateUserRole, getUserById, getAllUsers, getUserByPhone, deleteUser } from '../controllers/user.controllers.js'
 
 const router = express.Router()
 
@@ -179,7 +179,7 @@ router.get('/:id', protect, getUserById);
  *       403:
  *         description: Admin access required
  */
-router.get('/all', protect, getAllUsers);
+router.get('/all', protect, requireAdmin, getAllUsers);
 
 /**
  * @openapi
@@ -233,64 +233,5 @@ router.get('/phone/:phone', protect, getUserByPhone);
  */
 router.delete('/:id', protect, requireAdmin, deleteUser);
 
-/**
- * @openapi
- * /api/users/change-password:
- *   put:
- *     summary: Change my password
- *     security:
- *       - cookieAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [oldPassword, newPassword]
- *             properties:
- *               oldPassword:
- *                 type: string
- *               newPassword:
- *                 type: string
- *     responses:
- *       200:
- *         description: Password changed successfully
- *       400:
- *         description: Invalid current password
- */
-router.put('/change-password', protect, changeMyPassword);
-
-/**
- * @openapi
- * /api/users/change-password/{id}:
- *   put:
- *     summary: Change user password (admin only)
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [oldPassword, newPassword]
- *             properties:
- *               oldPassword:
- *                 type: string
- *               newPassword:
- *                 type: string
- *     responses:
- *       200:
- *         description: Password changed successfully
- *       400:
- *         description: Invalid old password
- */
-router.put('/change-password/:id', protect, requireAdmin, changeUserPassword);
-
 export default router
+
