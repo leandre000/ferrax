@@ -1,6 +1,6 @@
 import express from 'express'
 import { protect, requireAdmin } from '../middlewares/auth.middleware.js'
-import { createCar, getCars, getCarById, updateCar, deleteCar, addCarImages, removeCarImage, setPrimaryImage, listMyCars, reorderImages, listCar, verifyListedCar } from '../controllers/car.controllers.js'
+import { createCar, getCars, getCarById, updateCar, deleteCar, addCarImages, removeCarImage, setPrimaryImage, listMyCars, reorderImages, listCar, verifyListedCar, getListedCars, rejectListedCar } from '../controllers/car.controllers.js'
 
 const router = express.Router()
 
@@ -452,11 +452,11 @@ router.post('/list', protect, listCar);
  *     security:
  *       - cookieAuth: []
  *     parameters:
- *       - { Should be create car object }
- *       in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
+ *       
+ *       - in : path
+ *          name: id
+ *          required: true
+ *          schema: { type: string }
  *     requestBody:
  *       required: true
  *       content:
@@ -483,6 +483,55 @@ router.post('/list', protect, listCar);
  *       404:
  *         description: Car not found
  */
-router.post('/:id/verify', protect, requireAdmin, verifyListedCar)
+router.post('/:id/verify', protect, requireAdmin, verifyListedCar);
+
+/**
+ * @openapi
+ * /api/cars/listed:
+ *   get:
+ *     summary: Get all listed cars
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Listed cars retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Car'
+ *       403:
+ *         description: Forbidden - not an admin
+ */
+router.get('/listed', protect, requireAdmin, getListedCars);
+
+/**
+ * @openapi
+ * /api/cars/{id}/reject:
+ *   post:
+ *     summary: Reject a listed car
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Car rejected successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Car'
+ *       400:
+ *         description: Car is not listed
+ *       403:
+ *         description: Forbidden - not an admin
+ *       404:
+ *         description: Car not found
+ */
+router.post('/:id/reject', protect, requireAdmin, rejectListedCar)
 
 export default router

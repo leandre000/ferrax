@@ -76,7 +76,6 @@ export const updateCar = async (req, res) => {
     const isOwner = car.owner.toString() === req.user._id.toString()
     const isAdmin = req.user.role === 'admin'
     if (!isOwner && !isAdmin) return res.status(403).json({ message: 'Forbidden' })
-
     const updates = { ...req.body }
     if (car.status === 'sold') {
       delete updates.status
@@ -251,3 +250,41 @@ export const verifyListedCar = async (req, res) => {
     })
   }
 }
+
+export const getListedCars = async (req, res) => {
+  try {
+    const cars = await Car.find({ status: 'listed' })
+    res.json({
+      message: 'Listed cars retrieved successfully',
+      success: true,
+      cars
+    })
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id }, 'Failed to get listed cars')
+    res.status(500).json({
+      message: 'Failed to get listed cars',
+      success: false
+    })
+  }
+}
+
+export const rejectListedCar = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const car = await Car.findById(id)
+    if (!car) return res.status(404).json({ message: 'Car not found' })
+    if (car.status !== 'listed') return res.status(400).json({ message: 'Car is not listed' });
+    await car.deleteOne()
+    return res.json({
+      message: 'Car is rejected',
+      success: true,
+      car
+    })
+  } catch (error) {
+    logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to reject listed car')
+    res.status(500).json({
+      message: 'Failed to reject listed car',
+      success: false
+    })
+  }
+};

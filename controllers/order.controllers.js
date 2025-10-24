@@ -1,9 +1,6 @@
 import Order from '../models/order.model.js'
 import Car from '../models/car.model.js'
-import Stripe from 'stripe'
 import { logger } from '../config/logger.js'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2024-06-20' })
 
 export const createOrder = async (req, res) => {
   try {
@@ -23,67 +20,6 @@ export const createOrder = async (req, res) => {
   }
 }
 
-export const createCheckoutSession = async (req, res) => {
-  try {
-    const { orderId, successUrl, cancelUrl } = req.body
-    const order = await Order.findById(orderId).populate('car')
-    if (!order) return res.status(404).json({ message: 'Order not found' })
-    if (order.buyer.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Forbidden' })
-    if (order.status !== 'initiated') return res.status(400).json({ message: 'Invalid order status' })
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: { name: `${order.car.make} ${order.car.model} ${order.car.year}` },
-            unit_amount: Math.round(order.amount * 100)
-          },
-          quantity: 1
-        }
-      ],
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      metadata: { orderId: order._id.toString(), carId: order.car._id.toString() }
-    })
-
-    order.stripeSessionId = session.id
-    await order.save()
-    logger.info({ orderId: order._id, sessionId: session.id, userId: req.user._id }, 'Checkout session created')
-    res.json({ id: session.id, url: session.url })
-  } catch (error) {
-    logger.error({ err: error, orderId: req.body?.orderId, userId: req.user?._id }, 'Failed to create checkout session')
-    res.status(400).json({ message: 'Failed to create checkout session', error: error.message })
-  }
-}
-
-export const payOrder = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id).populate('car')
-    if (!order) return res.status(404).json({ message: 'Order not found' })
-    if (order.buyer.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Forbidden' })
-    if (order.status !== 'initiated') return res.status(400).json({ message: 'Invalid order status' })
-
-    const { paymentRef } = req.body
-    order.paymentRef = paymentRef || `PAY-${Date.now()}`
-    order.status = 'paid'
-    await order.save()
-
-    const car = await Car.findById(order.car)
-    car.status = 'sold'
-    car.reservedBy = undefined
-    car.reservedUntil = undefined
-    await car.save()
-    logger.info({ orderId: order._id, carId: car._id, userId: req.user._id }, 'Order paid')
-    res.json(order)
-  } catch (error) {
-    logger.error({ err: error, orderId: req.params.id, userId: req.user?._id }, 'Failed to complete payment')
-    res.status(400).json({ message: 'Failed to complete payment' })
-  }
-}
-
 export const listMyOrders = async (req, res) => {
   try {
     const orders = await Order.find({ buyer: req.user._id }).populate('car')
@@ -94,7 +30,7 @@ export const listMyOrders = async (req, res) => {
   }
 }
 
-export const listOrdersAdmin = async (req, res) => {
+export const listAllOrders = async (req, res) => {
   try {
     const { page = 1, limit = 20, status } = req.query
     const filter = {}

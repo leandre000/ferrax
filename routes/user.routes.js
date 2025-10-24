@@ -294,4 +294,3 @@ router.put('/change-password', protect, changeMyPassword);
 router.put('/change-password/:id', protect, requireAdmin, changeUserPassword);
 
 export default router
-
