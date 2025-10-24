@@ -422,7 +422,7 @@ router.post('/:id/images/reorder', protect, reorderImages);
  *         application/json:
  *           schema:
  *             type: object
- *             required: [carId]
+ *             required: [carId, price, description, images, primaryImage, location]
  *             properties:
  *               carId:
  *                 type: string
@@ -443,6 +443,36 @@ router.post('/:id/images/reorder', protect, reorderImages);
  *                 description: URL of the primary image
  *               location:
  *                 type: string
+ *                 description: Location of the car
+ *               fuelType:
+ *                 type: string
+ *                 enum: [petrol, diesel, electric, hybrid, other]
+ *                 description: Fuel type of the car
+ *               bodyType:
+ *                 type: string
+ *                 description: Body type of the car
+ *               color:
+ *                 type: string
+ *                 description: Color of the car
+ *               year:
+ *                 type: number
+ *                 description: Year of the car
+ *               make:
+ *                 type: string
+ *                 description: Make of the car
+ *               model:
+ *                 type: string
+ *                 description: Model of the car
+ *               mileage:
+ *                 type: number
+ *                 description: Mileage of the car
+ *               vin:
+ *                 type: string
+ *                 description: VIN of the car
+ *               transmission:
+ *                 type: string
+ *                 enum: [automatic, manual]
+ *                 description: Transmission of the car
  *     responses:
  *       200:
  *         description: Car listed successfully
@@ -458,13 +488,23 @@ router.post('/:id/images/reorder', protect, reorderImages);
 router.post('/list', protect, listCar);
 
 /**
+ * @openapi
+ * /api/cars/{id}/verify:
+ *   post:
+ *     summary: Verify a listed car
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
  *         description: Car verified successfully
- *       403:
- *         description: Forbidden - not the car owner or admin
- *       404:
- *         description: Car not found
  */
 router.post('/:id/verify', protect, requireAdmin, verifyListedCar);
+
 /**
  * @openapi
  * /api/cars/{id}/reject:
@@ -485,28 +525,28 @@ router.post('/:id/verify', protect, requireAdmin, verifyListedCar);
  *       404:
  *         description: Car not found
  */
-
 router.post('/:id/reject', protect, requireAdmin, rejectListedCar);
+
 /**
  * @openapi
  * /api/cars/listed:
  *   get:
- *     summary: Get a listed car
+ *     summary: Get all listed cars
  *     security:
  *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
  *     responses:
  *       200:
- *         description: Listed car
+ *         description: Listed cars
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Car'
  *       403:
- *         description: Forbidden - not the car owner or admin
- *       404:
- *         description: Car not found
+ *         description: Forbidden - not admin
  */
 router.get('/listed', protect, requireAdmin, getListedCars);
+
 export default router
 
