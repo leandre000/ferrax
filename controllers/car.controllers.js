@@ -246,24 +246,33 @@ export const verifyListedCar = async (req, res) => {
     logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to verify listed')
     res.status(500).json({
       message: 'Failed to verify listed',
-      success: false
+      success: false,
+      error: error.message
     })
   }
 }
 
 export const getListedCars = async (req, res) => {
   try {
+    const { page = 1, limit = 20 } = req.query
     const cars = await Car.find({ status: 'listed' })
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
     res.json({
       message: 'Listed cars retrieved successfully',
       success: true,
-      cars
+      cars,
+      total: cars.length,
+      page: Number(page),
+      limit: Number(limit)
     })
   } catch (error) {
-    logger.error({ err: error, userId: req.user?._id }, 'Failed to get listed cars')
+    logger.error({ err: error, query: req.query }, 'Failed to get listed cars')
     res.status(500).json({
       message: 'Failed to get listed cars',
-      success: false
+      success: false,
+      error: error.message
     })
   }
 }
@@ -284,7 +293,8 @@ export const rejectListedCar = async (req, res) => {
     logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to reject listed car')
     res.status(500).json({
       message: 'Failed to reject listed car',
-      success: false
+      success: false,
+      error: error.message
     })
   }
 };

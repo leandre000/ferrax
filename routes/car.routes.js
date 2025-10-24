@@ -2,7 +2,7 @@ import express from 'express'
 import { protect, requireAdmin } from '../middlewares/auth.middleware.js'
 import { createCar, getCars, getCarById, updateCar, deleteCar, addCarImages, removeCarImage, setPrimaryImage, listMyCars, reorderImages, verifyListedCar, rejectListedCar, getListedCars, listCar } from '../controllers/car.controllers.js'
 
-const router = express.Router() 
+const router = express.Router()
 
 /**
  * @openapi
@@ -65,28 +65,6 @@ const router = express.Router()
  *                   type: integer
  */
 router.get('/', getCars)
-
-/**
- * @openapi
- * /api/cars/{id}:
- *   get:
- *     summary: Get a car by id
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200:
- *         description: Car detail
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Car'
- *       404:
- *         description: Car not found
- */
-router.get('/:id', getCarById)
 
 /**
  * @openapi
@@ -540,13 +518,47 @@ router.post('/:id/reject', protect, requireAdmin, rejectListedCar);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Car'
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Car'
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
  *       403:
  *         description: Forbidden - not admin
  */
 router.get('/listed', protect, requireAdmin, getListedCars);
 
-export default router
+/**
+ * @openapi
+ * /api/cars/car/:id:
+ *   get:
+ *     summary: Get a car by id
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Car detail
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Car'
+ *       403:
+ *         description: Forbidden - not the car owner or admin
+ *       404:
+ *         description: Car not found
+ */
+router.get('/car/:id', protect, getCarById)
 
+export default router
