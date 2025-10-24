@@ -91,3 +91,21 @@ export const verifyOtp = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' })
     }
 }
+
+export const forgotPassword = async (req, res) => {
+    const { phone } = req.body
+    try {
+        if (!validatePhoneNumber(phone)) return res.status(400).json({ message: 'Invalid phone number' })
+        const user = await User.findOne({ phone })
+        if (!user) return res.status(404).json({ message: 'User not found' })
+        const otpCode = Math.floor(100000 + Math.random() * 900000)
+        const otpExpiresAt = Date.now() + 10 * 60 * 1000
+        user.otpCode = otpCode
+        user.otpExpiresAt = otpExpiresAt
+        await user.save()
+        sendPhoneVerificationCode(phone, otpCode)
+        res.status(200).json({ message: 'OTP sent successfully', success: true })
+    } catch (error) {
+        logger.error({ err: error, phone }, 'Forgot password failed')
+    }
+}

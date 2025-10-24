@@ -209,3 +209,45 @@ export const removeCarImage = async (req, res) => {
   }
 }
 
+export const listCar = async (req, res) => {
+  const { images, primaryImage, ...rest } = req.body
+  const data = { ...rest, owner: req.user._id, status: 'listed' };
+  try {
+    const car = await Car.create(data);
+    logger.info({ carId: car._id, userId: req.user._id }, 'Car listed')
+    res.json({
+      message: 'Car listed successfully',
+      success: true,
+      car
+    })
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id }, 'Failed to list car');
+    return res.status(500).json({
+      message: 'Failed to list car',
+      success: false,
+      error : error.message
+    })
+  }
+}
+
+export const verifyListedCar = async (req, res) => {
+  try {
+    const { id } = req.params
+    const car = await Car.findById(id)
+    if (!car) return res.status(404).json({ message: 'Car not found' })
+    if (car.status !== 'listed') return res.status(400).json({ message: 'Car is not listed' });
+    car.status = "available";
+    await car.save()
+    return res.json({
+      message: 'Car is listed',
+      success: true,
+      car
+    })
+  } catch (error) {
+    logger.error({ err: error, carId: req.params.id, userId: req.user?._id }, 'Failed to verify listed')
+    res.status(500).json({
+      message: 'Failed to verify listed',
+      success: false
+    })
+  }
+}

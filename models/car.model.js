@@ -5,7 +5,7 @@ const carSchema = new mongoose.Schema({
   model: { type: String, required: true, trim: true },
   year: { type: Number, required: true },
   price: { type: Number, required: true },
-  status: { type: String, enum: ['available', 'reserved', 'sold', 'rented'], default: 'available' },
+  status: { type: String, enum: ['listed','available', 'reserved', 'sold', 'rented'], default: 'available' },
   reservedUntil: { type: Date },
   reservedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   mileage: { type: Number, default: 0 },
