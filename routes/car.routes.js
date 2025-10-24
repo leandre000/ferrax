@@ -1,8 +1,8 @@
 import express from 'express'
-import { protect } from '../middlewares/auth.middleware.js'
-import { createCar, getCars, getCarById, updateCar, deleteCar, addCarImages, removeCarImage, setPrimaryImage, listMyCars, reorderImages } from '../controllers/car.controllers.js'
+import { protect, requireAdmin } from '../middlewares/auth.middleware.js'
+import { createCar, getCars, getCarById, updateCar, deleteCar, addCarImages, removeCarImage, setPrimaryImage, listMyCars, reorderImages, verifyListedCar, rejectListedCar, getListedCars, listCar } from '../controllers/car.controllers.js'
 
-const router = express.Router()
+const router = express.Router() 
 
 /**
  * @openapi
@@ -407,7 +407,106 @@ router.post('/:id/primary-image', protect, setPrimaryImage)
  *       404:
  *         description: Car not found
  */
-router.post('/:id/images/reorder', protect, reorderImages)
+router.post('/:id/images/reorder', protect, reorderImages);
 
+/**
+ * @openapi
+ * /api/cars/list:
+ *   post:
+ *     summary: List a car
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [carId]
+ *             properties:
+ *               carId:
+ *                 type: string
+ *                 description: ID of the car to list
+ *               price:
+ *                 type: number
+ *                 description: Price of the car
+ *               description:
+ *                 type: string
+ *                 description: Description of the car
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of image URLs
+ *               primaryImage:
+ *                 type: string
+ *                 description: URL of the primary image
+ *               location:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Car listed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Car'
+ *       403:
+ *         description: Forbidden - not the car owner or admin
+ *       404:
+ *         description: Car not found
+ */
+router.post('/list', protect, listCar);
+
+/**
+ *         description: Car verified successfully
+ *       403:
+ *         description: Forbidden - not the car owner or admin
+ *       404:
+ *         description: Car not found
+ */
+router.post('/:id/verify', protect, requireAdmin, verifyListedCar);
+/**
+ * @openapi
+ * /api/cars/{id}/reject:
+ *   post:
+ *     summary: Reject a listed car
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Car rejected successfully
+ *       403:
+ *         description: Forbidden - not the car owner or admin
+ *       404:
+ *         description: Car not found
+ */
+
+router.post('/:id/reject', protect, requireAdmin, rejectListedCar);
+/**
+ * @openapi
+ * /api/cars/listed:
+ *   get:
+ *     summary: Get a listed car
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Listed car
+ *       403:
+ *         description: Forbidden - not the car owner or admin
+ *       404:
+ *         description: Car not found
+ */
+router.get('/listed', protect, requireAdmin, getListedCars);
 export default router
 

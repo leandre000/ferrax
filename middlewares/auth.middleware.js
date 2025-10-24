@@ -8,7 +8,7 @@ export const protect = async (req, res, next) => {
 
     const secret = process.env.JWT_SECRET
     if (!secret) return res.status(500).json({ message: 'Server configuration error' })
-    
+
     const decoded = jwt.verify(token, secret)
     const user = await User.findById(decoded.id).select('-password')
     if (!user) return res.status(401).json({ message: 'User not found' })

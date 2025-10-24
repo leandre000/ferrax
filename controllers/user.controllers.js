@@ -1,5 +1,6 @@
 import User from '../models/user.model.js'
 import { logger } from '../config/logger.js'
+import bcrypt from 'bcryptjs'
 
 export const listUsers = async (req, res) => {
   try {
@@ -90,7 +91,7 @@ export const changeMyPassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body
     const user = await User.findById(id)
     if (!user) return res.status(404).json({ message: 'User not found' })
-    if (!bcrypt.compare(oldPassword, user.password)) {
+    if (!await bcrypt.compare(oldPassword, user.password)) {
       return res.status(400).json({
         success: false,
         message: 'Old password is incorrect'
@@ -100,7 +101,7 @@ export const changeMyPassword = async (req, res) => {
     user.password = hashedPassword
     await user.save()
     return res.status(200).json({
-      success: false,
+      success: true,
       message: 'Password changed successfully'
     })
   } catch (error) {
@@ -115,12 +116,12 @@ export const changeUserPassword = async (req, res) => {
     const { newPassword } = req.body
     const user = await User.findById(id)
     if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.role == "admin") return res.status(403).json({ message: "You can't change admin's password" })
+    if (user.role === "admin") return res.status(403).json({ message: "You can't change admin's password" })
     const hashedPassword = await bcrypt.hash(newPassword, 12)
     user.password = hashedPassword
     await user.save()
     return res.status(200).json({
-      success: false,
+      success: true,
       message: 'Password changed successfully'
     })
   } catch (error) {

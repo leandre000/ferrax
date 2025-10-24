@@ -224,7 +224,7 @@ export const listCar = async (req, res) => {
     return res.status(500).json({
       message: 'Failed to list car',
       success: false,
-      error : error.message
+      error: error.message
     })
   }
 }

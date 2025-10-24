@@ -11,7 +11,6 @@ import carRoutes from './routes/car.routes.js'
 import bookingRoutes from './routes/booking.routes.js'
 import orderRoutes from './routes/order.routes.js'
 import messageRoutes from './routes/message.routes.js'
-import webhookRoutes from './routes/webhook.routes.js'
 import userRoutes from './routes/user.routes.js'
 import { auditLogger } from './middlewares/audit.middleware.js'
 import { initializeSocket } from './services/socket.service.js'
@@ -32,8 +31,6 @@ app.use(pinoHttp({
     res(res) { return { statusCode: res.statusCode } }
   }
 }))
-
-app.use('/api/webhooks', webhookRoutes)
 
 // Middleware
 app.use(express.json())

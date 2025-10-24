@@ -6,6 +6,13 @@ const userSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true,
+        trim: true
+    },
     phone: {
         type: String,
         required: true,
@@ -21,11 +28,19 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
-    driverLicense : {
+    otpCode: {
+        type: String,
+        default: null
+    },
+    otpExpiresAt: {
+        type: Date,
+        default: null
+    },
+    driverLicense: {
         type: String,
         default: ''
     },
-    drivingExperience : {
+    drivingExperience: {
         type: String,
         default: ''
     }
