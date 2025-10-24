@@ -452,10 +452,23 @@ router.post('/list', protect, listCar);
  *     security:
  *       - cookieAuth: []
  *     parameters:
- *       - in: path
+ *       - { Should be create car object }
+ *       in: path
  *         name: id
  *         required: true
  *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [id]
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: ID of the car to verify
+ *       
  *     responses:
  *       200:
  *         description: Car verified successfully

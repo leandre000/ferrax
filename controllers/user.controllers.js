@@ -83,3 +83,48 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: 'Failed to delete user' })
   }
 }
+
+export const changeMyPassword = async (req, res) => {
+  try {
+    const { id } = req.user
+    const { oldPassword, newPassword } = req.body
+    const user = await User.findById(id)
+    if (!user) return res.status(404).json({ message: 'User not found' })
+    if (!bcrypt.compare(oldPassword, user.password)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Old password is incorrect'
+      })
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 12)
+    user.password = hashedPassword
+    await user.save()
+    return res.status(200).json({
+      success: false,
+      message: 'Password changed successfully'
+    })
+  } catch (error) {
+    logger.error({ err: error, targetUserId: req.user._id }, 'Failed to change password')
+    res.status(500).json({ message: 'Failed to change password' })
+  }
+}
+
+export const changeUserPassword = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { newPassword } = req.body
+    const user = await User.findById(id)
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.role == "admin") return res.status(403).json({ message: "You can't change admin's password" })
+    const hashedPassword = await bcrypt.hash(newPassword, 12)
+    user.password = hashedPassword
+    await user.save()
+    return res.status(200).json({
+      success: false,
+      message: 'Password changed successfully'
+    })
+  } catch (error) {
+    logger.error({ err: error, targetUserId: req.params.id }, 'Failed to change password')
+    res.status(500).json({ message: 'Failed to change password' })
+  }
+}
