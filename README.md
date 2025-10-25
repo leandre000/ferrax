@@ -13,10 +13,6 @@ MONGO_URI=mongodb://127.0.0.1:27017/carhubconnect_db
 JWT_SECRET=change_me
 CLIENT_URLS=http://localhost:3000,https://yourdomain.com
 
-# Stripe
-STRIPE_SECRET_KEY=sk_test_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-
 # Twilio (for phone OTP)
 TWILIO_ACCOUNT_SID=your-account-sid
 TWILIO_AUTH_TOKEN=your-auth-token
@@ -77,12 +73,17 @@ npm run dev
 
 ## Orders
 - POST `/api/orders` { carId, amount, notes? } (auth required)
-- POST `/api/orders/checkout` { orderId, successUrl, cancelUrl } (auth required)
-- POST `/api/orders/:id/pay` { paymentRef? } (auth required)
 - POST `/api/orders/:id/cancel` (auth required)
 - GET `/api/orders/me` (auth required)
 - GET `/api/orders` (admin only)
 - GET `/api/orders/:id` (buyer/admin)
+
+## Wishlist (auth required)
+- POST `/api/wishlist/add` { carId } - Add a car to wishlist
+- POST `/api/wishlist/remove` { carId } - Remove a car from wishlist
+- GET `/api/wishlist` - Get user's wishlist
+- DELETE `/api/wishlist/clear` - Clear all items from wishlist
+- DELETE `/api/wishlist` - Delete the entire wishlist
 
 ## Messaging (auth required)
 - GET `/api/messages/conversations` - Get all conversations for the current user
@@ -97,9 +98,6 @@ npm run dev
 - Cookie-based authentication (same as REST API)
 - Events: `privateMessage`, `typing`, `stopTyping`, `markAsRead`, `joinCarRoom`, `leaveCarRoom`
 - Connection: `io('http://localhost:5000', { withCredentials: true })`
-
-## Webhooks
-- POST `/api/webhooks/stripe` (raw body) handles `checkout.session.completed`
 
 ## API Documentation
 - Swagger UI available at `/api/docs`

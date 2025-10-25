@@ -168,6 +168,20 @@ const swaggerSpec = swaggerJsdoc({
             updatedAt: { type: 'string', format: 'date-time' }
           }
         },
+        Wishlist: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            user: { type: 'string' },
+            cars: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Array of car IDs'
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          }
+        },
         Error: {
           type: 'object',
           properties: {

@@ -85,7 +85,7 @@ wishlistRouter.post('/remove', protect, removeFromWishlist);
  *     tags: [Wishlist]
  *     summary: Get the authenticated user's wishlist
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: Successfully retrieved wishlist
@@ -112,7 +112,7 @@ wishlistRouter.get('/', protect, getWishlist);
  *     tags: [Wishlist]
  *     summary: Clear all items from the user's wishlist
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: Wishlist cleared successfully or was already empty
@@ -137,7 +137,7 @@ wishlistRouter.delete('/clear', protect, clearWishlist);
  *     tags: [Wishlist]
  *     summary: Delete the user's wishlist
  *     security:
- *       - bearerAuth: []
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: Wishlist deleted successfully or not found
