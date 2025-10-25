@@ -1,5 +1,5 @@
 import express from 'express'
-import { login, register, logout, me, verifyOtp } from '../controllers/auth.controllers.js'
+import { login, register, logout, verifyOtp, currentUser } from '../controllers/auth.controllers.js'
 import { protect } from '../middlewares/auth.middleware.js'
 
 const router = express.Router()
@@ -31,8 +31,8 @@ const router = express.Router()
  *       201:
  *         description: OTP sent, proceed to verify
  */
-
 router.post('/register', register)
+
 /**
  * @openapi
  * /api/auth/login:
@@ -52,6 +52,7 @@ router.post('/register', register)
  *       200: { description: Login successful }
  */
 router.post('/login', login)
+
 /**
  * @openapi
  * /api/auth/verify-otp:
@@ -71,6 +72,7 @@ router.post('/login', login)
  *       200: { description: Registration completed }
  */
 router.post('/verify-otp', verifyOtp)
+
 /**
  * @openapi
  * /api/auth/logout:
@@ -114,6 +116,6 @@ router.post('/logout', protect, logout)
  *       401:
  *         description: Not authenticated
  */
-router.get('/me', protect, me)
+router.get('/me', protect, currentUser)
 
 export default router

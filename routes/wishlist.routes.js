@@ -39,7 +39,7 @@ const wishlistRouter = express.Router();
  *       500:
  *         description: Server error
  */
-wishlistRouter.post('/add', protect,addToWishlist);
+wishlistRouter.post('/add', protect, addToWishlist);
 
 /**
  * @openapi
@@ -103,7 +103,7 @@ wishlistRouter.post('/remove', protect, removeFromWishlist);
  *       500:
  *         description: Server error
  */
-wishlistRouter.get('/',protect, getWishlist);
+wishlistRouter.get('/', protect, getWishlist);
 
 /**
  * @openapi

@@ -49,9 +49,13 @@ export const getWishlist = async (req, res) => {
     const { _id } = req.user;
     try {
         const wishlist = await Wishlist.findOne({ user: _id }).populate('cars');
-        return res.status(200).json({ message: 'Wishlist retrieved successfully', success: true, data: wishlist });
+        return res.status(200).json({
+            message: 'Wishlist retrieved successfully',
+            success: true,
+            wishlist: wishlist || []
+        });
     } catch (error) {
-        logger.error({ err : error }, 'Error getting wishlist');
+        logger.error({ err: error }, 'Error getting wishlist');
         return res.status(500).json({ message: 'Error getting wishlist' });
     }
 };
@@ -65,7 +69,7 @@ export const deleteWishlist = async (req, res) => {
         }
         return res.status(200).json({ message: 'Wishlist deleted successfully', success: true });
     } catch (error) {
-        logger.error({ err : error }, 'Error deleting wishlist');
+        logger.error({ err: error }, 'Error deleting wishlist');
         return res.status(500).json({ message: 'Error deleting wishlist' });
     }
 };
@@ -81,7 +85,7 @@ export const clearWishlist = async (req, res) => {
         await wishlist.save();
         return res.status(200).json({ message: 'Wishlist cleared successfully', success: true });
     } catch (error) {
-        logger.error({ err : error }, 'Error clearing wishlist');
+        logger.error({ err: error }, 'Error clearing wishlist');
         return res.status(500).json({ message: 'Error clearing wishlist' });
     }
 };

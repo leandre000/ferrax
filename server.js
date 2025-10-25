@@ -16,6 +16,7 @@ import { auditLogger } from './middlewares/audit.middleware.js'
 import { initializeSocket } from './services/socket.service.js'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
+import wishlistRouter from './routes/wishlist.routes.js'
 
 dotenv.config()
 
@@ -191,6 +192,7 @@ app.use('/api/bookings', bookingRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/messages', messageRoutes)
+app.use('/api/wishlist', wishlistRouter)
 
 // Initialize WebSocket
 const socketService = initializeSocket(server)
