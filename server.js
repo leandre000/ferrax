@@ -272,7 +272,7 @@ app.set('io', socketService.getIO())
  */
 app.get('/health', (req, res) => { res.json({ status: 'ok' }) })
 
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 5020
 
 // Global error handler (must be after all routes)
 app.use((err, req, res, next) => {
