@@ -1,5 +1,6 @@
 import Car from '../models/car.model.js'
 import { logger } from '../config/logger.js'
+import notificationService from '../services/notification.service.js'
 
 export const createCar = async (req, res) => {
   try {
@@ -237,6 +238,20 @@ export const verifyListedCar = async (req, res) => {
     if (car.status !== 'listed') return res.status(400).json({ message: 'Car is not listed' });
     car.status = "available";
     await car.save()
+
+    // Send notification to car owner
+    try {
+      const io = req.app.get('io')
+      await notificationService.notifyAdminApproval(
+        car.owner,
+        'car_listed',
+        { make: car.make, model: car.model, carId: car._id },
+        io
+      )
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to send notification for car approval')
+    }
+
     return res.json({
       message: 'Car is listed',
       success: true,
@@ -283,7 +298,26 @@ export const rejectListedCar = async (req, res) => {
     const car = await Car.findById(id)
     if (!car) return res.status(404).json({ message: 'Car not found' })
     if (car.status !== 'listed') return res.status(400).json({ message: 'Car is not listed' });
+
+    // Store car info before deletion
+    const carInfo = { make: car.make, model: car.model, carId: car._id }
+    const ownerId = car.owner
+
     await car.deleteOne()
+
+    // Send notification to car owner
+    try {
+      const io = req.app.get('io')
+      await notificationService.notifyAdminApproval(
+        ownerId,
+        'car_rejected',
+        carInfo,
+        io
+      )
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to send notification for car rejection')
+    }
+
     return res.json({
       message: 'Car is rejected',
       success: true,

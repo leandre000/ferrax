@@ -17,6 +17,7 @@ import { initializeSocket } from './services/socket.service.js'
 import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
 import wishlistRouter from './routes/wishlist.routes.js'
+import notificationRoutes from './routes/notification.routes.js'
 
 dotenv.config()
 
@@ -182,6 +183,40 @@ const swaggerSpec = swaggerJsdoc({
             updatedAt: { type: 'string', format: 'date-time' }
           }
         },
+        Notification: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            user: { type: 'string' },
+            type: {
+              type: 'string',
+              enum: [
+                'booking_confirmed',
+                'booking_cancelled',
+                'booking_expired',
+                'order_created',
+                'order_confirmed',
+                'order_cancelled',
+                'order_paid',
+                'new_message',
+                'car_added_to_wishlist',
+                'car_sold',
+                'car_reserved',
+                'system_alert',
+                'admin_approval'
+              ]
+            },
+            title: { type: 'string' },
+            message: { type: 'string' },
+            read: { type: 'boolean' },
+            readAt: { type: 'string', format: 'date-time' },
+            metadata: { type: 'object' },
+            link: { type: 'string' },
+            icon: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          }
+        },
         Error: {
           type: 'object',
           properties: {
@@ -207,6 +242,7 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/wishlist', wishlistRouter)
+app.use('/api/notifications', notificationRoutes)
 
 // Initialize WebSocket
 const socketService = initializeSocket(server)

@@ -1,6 +1,7 @@
 import Booking from '../models/booking.model.js'
 import Car from '../models/car.model.js'
 import { logger } from '../config/logger.js'
+import notificationService from '../services/notification.service.js'
 
 const RESERVATION_MINUTES = 30
 
@@ -41,6 +42,16 @@ export const confirmBooking = async (req, res) => {
     }
     booking.status = 'confirmed'
     await booking.save()
+
+    // Send notification
+    const io = req.app.get('io')
+    await notificationService.notifyBookingConfirmed(
+      id,
+      booking._id,
+      { make: booking.car.make, model: booking.car.model },
+      io
+    )
+
     logger.info({ bookingId: booking._id, userId: id }, 'Booking confirmed')
     res.json(booking)
   } catch (error) {
@@ -67,6 +78,16 @@ export const cancelBooking = async (req, res) => {
       car.reservedUntil = undefined
       await car.save()
     }
+
+    // Send notification
+    const io = req.app.get('io')
+    const populatedBooking = await Booking.findById(booking._id).populate('car')
+    await notificationService.notifyBookingCancelled(
+      booking.user,
+      booking._id,
+      { make: car?.make, model: car?.model },
+      io
+    )
 
     logger.info({ bookingId: booking._id, userId: req.user._id }, 'Booking cancelled')
     res.json({ message: 'Booking cancelled' })

@@ -85,6 +85,17 @@ npm run dev
 - DELETE `/api/wishlist/clear` - Clear all items from wishlist
 - DELETE `/api/wishlist` - Delete the entire wishlist
 
+## Notifications (auth required)
+- GET `/api/notifications` `?page=&limit=&read=` - Get all notifications
+- GET `/api/notifications/unread` - Get unread notification count
+- GET `/api/notifications/:id` - Get a single notification
+- PUT `/api/notifications/:id/read` - Mark notification as read
+- PUT `/api/notifications/mark-multiple` { notificationIds: [] } - Mark multiple as read
+- PUT `/api/notifications/mark-all-read` - Mark all notifications as read
+- DELETE `/api/notifications/:id` - Delete a notification
+- DELETE `/api/notifications/delete-multiple` { notificationIds: [] } - Delete multiple notifications
+- DELETE `/api/notifications/clear` - Clear all notifications
+
 ## Messaging (auth required)
 - GET `/api/messages/conversations` - Get all conversations for the current user
 - GET `/api/messages/:carId/:recipientId` - Get messages between current user and another user for a specific car

@@ -1,5 +1,8 @@
 import Message from '../models/message.model.js';
 import { logger } from '../config/logger.js';
+import Car from '../models/car.model.js';
+import User from '../models/user.model.js';
+import notificationService from '../services/notification.service.js';
 
 export const getMessages = async (req, res) => {
   try {
@@ -13,17 +16,17 @@ export const getMessages = async (req, res) => {
         { sender: recipientId, recipient: userId }
       ]
     })
-    .sort({ createdAt: 1 })
-    .populate('sender', 'fullname')
-    .populate('recipient', 'fullname');
+      .sort({ createdAt: 1 })
+      .populate('sender', 'fullname')
+      .populate('recipient', 'fullname');
 
     // Mark messages as read
     await Message.updateMany(
-      { 
+      {
         car: carId,
         recipient: userId,
         sender: recipientId,
-        read: false 
+        read: false
       },
       { $set: { read: true } }
     );
@@ -167,6 +170,22 @@ export const sendMessage = async (req, res) => {
       },
       carId: carId
     });
+
+    // Send notification to recipient
+    try {
+      const car = await Car.findById(carId);
+      const io = req.app.get('io');
+
+      await notificationService.notifyNewMessage(
+        recipientId,
+        req.user.fullname,
+        { _id: carId, make: car?.make || 'Car', model: car?.model || '' },
+        message._id,
+        io
+      );
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to send message notification');
+    }
 
     res.status(201).json(populatedMessage);
   } catch (error) {
