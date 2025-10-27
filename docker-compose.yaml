@@ -1,5 +1,6 @@
 services:
   carhubconnect_backend:
+    container_name: carhubconnect_backend
     build: .
     ports:
       - 5020:5020
@@ -8,6 +9,7 @@ services:
     depends_on:
       - mongodb
   mongodb:
+    container_name: carhubconnect_db
     image: mongo:latest
     ports:
       - 27017:27017
