@@ -63,105 +63,6 @@ router.get('/', protect, listUsers)
 
 /**
  * @openapi
- * /api/users/{id}/role:
- *   put:
- *     summary: Update user role (admin only)
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [role]
- *             properties:
- *               role:
- *                 type: string
- *                 enum: [user, admin]
- *     responses:
- *       200:
- *         description: User role updated successfully
- *       400:
- *         description: Invalid role
- *       403:
- *         description: Admin access required
- *       404:
- *         description: User not found
- */
-/**
- * @openapi
- * /api/users/{id}/role:
- *   put:
- *     summary: Update user role (admin only)
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [role]
- *             properties:
- *               role:
- *                 type: string
- *                 enum: [user, admin]
- *     responses:
- *       200:
- *         description: User role updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       400:
- *         description: Invalid role
- *       403:
- *         description: Admin access required
- *       404:
- *         description: User not found
- */
-router.put('/:id/role', protect, requireAdmin, updateUserRole);
-
-/**
- * @openapi
- * /api/users/{id}:
- *   get:
- *     summary: Get user by ID
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: User details
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       404:
- *         description: User not found
- */
-router.get('/:id', protect, getUserById);
-
-/**
- * @openapi
  * /api/users/all:
  *   get:
  *     summary: Get all users without pagination (admin only)
@@ -209,6 +110,31 @@ router.get('/phone/:phone', protect, getUserByPhone);
 /**
  * @openapi
  * /api/users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ */
+router.get('/:id', protect, getUserById);
+
+/**
+ * @openapi
+ * /api/users/{id}:
  *   delete:
  *     summary: Delete a user (admin only)
  *     security:
@@ -233,5 +159,40 @@ router.get('/phone/:phone', protect, getUserByPhone);
  */
 router.delete('/:id', protect, requireAdmin, deleteUser);
 
-export default router
+/**
+ * @openapi
+ * /api/users/{id}/role:
+ *   put:
+ *     summary: Update user role (admin only)
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [role]
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [user, admin]
+ *     responses:
+ *       200:
+ *         description: User role updated successfully
+ *       400:
+ *         description: Invalid role
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: User not found
+ */
+router.put('/:id/role', protect, requireAdmin, updateUserRole);
 
+export default router

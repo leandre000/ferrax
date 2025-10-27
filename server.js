@@ -18,6 +18,7 @@ import swaggerUi from 'swagger-ui-express'
 import swaggerJsdoc from 'swagger-jsdoc'
 import wishlistRouter from './routes/wishlist.routes.js'
 import notificationRoutes from './routes/notification.routes.js'
+import testDriveRouter from './routes/test-drive.routes.js'
 
 dotenv.config()
 
@@ -243,6 +244,7 @@ app.use('/api/users', userRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/wishlist', wishlistRouter)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/test-drives', testDriveRouter)
 
 // Initialize WebSocket
 const socketService = initializeSocket(server)

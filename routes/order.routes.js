@@ -38,6 +38,19 @@ router.post('/', protect, createOrder)
 
 /**
  * @openapi
+ * /api/orders/me:
+ *   get:
+ *     summary: Get current user's orders
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of user's orders
+ */
+router.get('/me', protect, listMyOrders)
+
+/**
+ * @openapi
  * /api/orders/{id}:
  *   get:
  *     summary: Get order by ID
@@ -113,18 +126,4 @@ router.get('/', protect, requireAdmin, listAllOrders)
  */
 router.post('/:id/cancel', protect, cancelOrder)
 
-/**
- * @openapi
- * /api/orders/me:
- *   get:
- *     summary: Get current user's orders
- *     security:
- *       - cookieAuth: []
- *     responses:
- *       200:
- *         description: List of user's orders
- */
-router.get('/me', protect, listMyOrders)
-
 export default router
-
