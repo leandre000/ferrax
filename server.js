@@ -12,6 +12,7 @@ import bookingRoutes from './routes/booking.routes.js'
 import orderRoutes from './routes/order.routes.js'
 import messageRoutes from './routes/message.routes.js'
 import userRoutes from './routes/user.routes.js'
+import brandRoutes from './routes/brand.routes.js'
 import { auditLogger } from './middlewares/audit.middleware.js'
 import { initializeSocket } from './services/socket.service.js'
 import swaggerUi from 'swagger-ui-express'
@@ -244,7 +245,8 @@ app.use('/api/users', userRoutes)
 app.use('/api/messages', messageRoutes)
 app.use('/api/wishlist', wishlistRouter)
 app.use('/api/notifications', notificationRoutes)
-app.use('/api/test-drives', testDriveRouter)
+app.use('/api/test-drives', testDriveRouter);
+app.use('/api/brands', brandRoutes);
 
 // Initialize WebSocket
 const socketService = initializeSocket(server)
