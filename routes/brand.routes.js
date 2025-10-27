@@ -1,6 +1,6 @@
 import express from 'express';
 import { protect, requireAdmin } from '../middlewares/auth.middleware.js';
-import { createBrand, deleteBrand, getAllBrands, getBrandById, updateBrand } from '../controllers/brands.controllers.js';
+import { createBrand, deleteBrand, getAllBrands, getBrandById, getBrandByName, updateBrand } from '../controllers/brands.controllers.js';
 
 const router = express.Router()
 
@@ -135,5 +135,28 @@ router.put("/:brandId", protect, requireAdmin, updateBrand);
  *         description: Internal server error.
  */
 router.delete("/:brandId", protect, requireAdmin, deleteBrand);
+
+/**
+ * @openapi
+ * /brands/name:
+ *   get:
+ *     summary: Get brand by name
+ *     description: Retrieve the brand by its name.
+ *     parameters:
+ *       - in: path
+ *         name: brandId
+ *         required: true
+ *         description: The ID of the brand to retrieve the name.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The brand object.
+ *       404:
+ *         description: Brand not found.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get("/name", getBrandByName);
 
 export default router
